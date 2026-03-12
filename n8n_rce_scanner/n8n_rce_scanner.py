@@ -416,7 +416,7 @@ async def main(args):
     semaphore = asyncio.Semaphore(SEMAPHORE_LIMIT)
     findings = []
 
-    async with httpx.AsyncClient(verify=False, timeout=REQUEST_TIMEOUT) as client:
+    async with httpx.AsyncClient(verify=not args.no_verify, timeout=REQUEST_TIMEOUT) as client:
         tasks = [scan_target(client, t, semaphore, args.safe) for t in targets]
         completed = 0
 
@@ -493,6 +493,8 @@ Examples:
                         help="Detection only — skip expression injection probes")
     parser.add_argument("--concurrency", type=int, default=30,
                         help="Max concurrent requests (default: 30)")
+    parser.add_argument("--no-verify", action="store_true",
+                        help="Disable TLS certificate verification (for self-signed certs)")
     args = parser.parse_args()
 
     SEMAPHORE_LIMIT = args.concurrency
