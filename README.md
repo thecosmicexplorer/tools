@@ -1,4 +1,4 @@
-# Daily Tools
+# Custom Tools
 
 One useful shell/Python script, pushed every day automatically.
 
