@@ -2,7 +2,7 @@ name: Daily Security Tool
 
 on:
   schedule:
-    - cron: '47 8 * * *'   # 8:47 AM UTC daily
+    - cron: '0 8 * * *'    # 8:00 AM UTC daily
   workflow_dispatch:         # manual trigger via GitHub UI
 
 permissions:
