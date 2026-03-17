@@ -1,0 +1,32 @@
+name: Daily Security Tool
+
+on:
+  schedule:
+    - cron: '47 8 * * *'   # 8:47 AM UTC daily
+  workflow_dispatch:         # manual trigger via GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  generate-tool:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install anthropic httpx
+
+      - name: Generate and publish tool
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/generate_tool.py
