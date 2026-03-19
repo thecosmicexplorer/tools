@@ -13,6 +13,7 @@ A daily-updated collection of CVE scanners and offensive security tools for bug 
 
 | Date | Tool | CVE / Topic | Description |
 |------|------|-------------|-------------|
+| 2026-03-19 | [vite_path_traversal_scanner.py](2026-03-19/vite_path_traversal_scanner.py) | CVE-2025-30208 (CVSS 9.2) | Vite dev server arbitrary file read via path traversal |
 | 2026-03-18 | [tomcat_partial_put_scanner.py](2026-03-18/tomcat_partial_put_scanner.py) | CVE-2025-24813 (CVSS 9.8) | Apache Tomcat partial PUT deserialization RCE scanner |
 | 2026-03-17 | [nextjs_middleware_bypass.py](2026-03-17/nextjs_middleware_bypass.py) | CVE-2025-29927 (CVSS 9.1) | Next.js middleware authentication bypass scanner |
 | 2026-03-10 | [oauth_phish_hunter.py](2026-03-10/oauth_phish_hunter.py) | — | Detects OAuth redirection abuse phishing (Entra ID/Azure AD — active March 2026 campaign) |
