@@ -24,9 +24,9 @@ jobs:
           python-version: '3.12'
 
       - name: Install dependencies
-        run: pip install anthropic httpx
+        run: pip install openai httpx
 
       - name: Generate and publish tool
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: python scripts/generate_tool.py
