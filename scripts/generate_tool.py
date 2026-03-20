@@ -2,10 +2,10 @@
 """
 Daily Security Tool Generator
 ==============================
-Called by GitHub Actions daily. Uses Claude API to generate a new CVE scanner,
+Called by GitHub Actions daily. Uses GitHub Models API (free) to generate a new CVE scanner,
 writes it to a dated folder, updates root README.md, and commits + pushes.
 
-Requires env var: ANTHROPIC_API_KEY
+Requires env var: GITHUB_TOKEN (automatically available in GitHub Actions)
 """
 
 import os
@@ -15,7 +15,7 @@ import subprocess
 from datetime import date
 from pathlib import Path
 
-import anthropic
+from openai import OpenAI
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
 
 
 def get_existing_tools() -> str:
-    """Return a list of all tracked files to help Claude avoid duplicates."""
+    """Return a list of all tracked files to help the model avoid duplicates."""
     result = run(["git", "ls-files"])
     return result.stdout.strip()
 
@@ -43,7 +43,7 @@ def get_style_reference() -> str:
     return ""
 
 
-# ── Claude API call ───────────────────────────────────────────────────────────
+# ── GitHub Models API call ────────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """\
 You are a professional security researcher building a public library of CVE scanners
@@ -89,26 +89,29 @@ class** that is useful for bug bounty / red team. Requirements:
 - ANSI color terminal output: CRITICAL=red, HIGH=yellow, INFO=green, RESET
 - JSON output with `--output file.json`
 - Detailed module docstring with CVE info, usage examples, and references
-- 350–550 lines total
+- 350-550 lines total
 
-**Format your response EXACTLY like this — nothing before TOOL_NAME, nothing after the README block:**
+**Format your response EXACTLY like this -- nothing before TOOL_NAME, nothing after the README block:**
 
 TOOL_NAME: <snake_case_name_no_extension>
 CVE: <CVE-YYYY-NNNNN or MULTI or N/A>
 DESCRIPTION: <concise one-line description for the README log>
 PYTHON_CODE:
-```python
+\`\`\`python
 <complete scanner code>
-```
+\`\`\`
 README_CONTENT:
-```markdown
+\`\`\`markdown
 <complete README.md for this tool>
-```
+\`\`\`
 """
 
 
-def call_claude(today: str, existing_tools: str, style_ref: str) -> dict:
-    client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
+    client = OpenAI(
+        base_url="https://models.inference.ai.azure.com",
+        api_key=os.environ["GITHUB_TOKEN"],
+    )
 
     prompt = USER_PROMPT_TEMPLATE.format(
         today=today,
@@ -116,21 +119,23 @@ def call_claude(today: str, existing_tools: str, style_ref: str) -> dict:
         style_ref=style_ref,
     )
 
-    print("[*] Calling Claude API...")
-    message = client.messages.create(
-        model="claude-opus-4-6",
+    print("[*] Calling GitHub Models API (gpt-4o)...")
+    response = client.chat.completions.create(
+        model="gpt-4o",
         max_tokens=8192,
-        system=SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": prompt}],
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
     )
 
-    response = message.content[0].text
+    text = response.choices[0].message.content
 
     # ── Parse ──────────────────────────────────────────────────────────────────
-    tool_name_m  = re.search(r"TOOL_NAME:\s*(.+)", response)
-    description_m = re.search(r"DESCRIPTION:\s*(.+)", response)
-    python_m     = re.search(r"PYTHON_CODE:\s*```python\n(.*?)```", response, re.DOTALL)
-    readme_m     = re.search(r"README_CONTENT:\s*```markdown\n(.*?)```", response, re.DOTALL)
+    tool_name_m   = re.search(r"TOOL_NAME:\s*(.+)", text)
+    description_m = re.search(r"DESCRIPTION:\s*(.+)", text)
+    python_m      = re.search(r"PYTHON_CODE:\s*```python\n(.*?)```", text, re.DOTALL)
+    readme_m      = re.search(r"README_CONTENT:\s*```markdown\n(.*?)```", text, re.DOTALL)
 
     missing = []
     if not tool_name_m:  missing.append("TOOL_NAME")
@@ -138,9 +143,9 @@ def call_claude(today: str, existing_tools: str, style_ref: str) -> dict:
     if not readme_m:     missing.append("README_CONTENT")
 
     if missing:
-        print(f"[!] Claude response missing: {', '.join(missing)}")
+        print(f"[!] Response missing: {', '.join(missing)}")
         print("--- Response preview ---")
-        print(response[:1000])
+        print(text[:1000])
         sys.exit(1)
 
     return {
@@ -184,13 +189,13 @@ def main():
     # Skip if today's tool already exists
     today_dir = Path(today)
     if today_dir.exists() and list(today_dir.glob("*.py")):
-        print(f"[*] Tool for {today} already exists — nothing to do.")
+        print(f"[*] Tool for {today} already exists -- nothing to do.")
         sys.exit(0)
 
     existing_tools = get_existing_tools()
     style_ref = get_style_reference()
 
-    result = call_claude(today, existing_tools, style_ref)
+    result = call_model(today, existing_tools, style_ref)
     tool_name = result["tool_name"]
 
     print(f"[*] Generated tool: {tool_name}")
