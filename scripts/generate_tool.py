@@ -25,17 +25,14 @@ def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
 
 
 def get_existing_tools() -> str:
-    """Return a list of all tracked files to help the model avoid duplicates."""
     result = run(["git", "ls-files"])
     return result.stdout.strip()
 
 
 def get_style_reference() -> str:
-    """Return the n8n scanner as a style reference (first 4000 chars)."""
     ref = Path("n8n_rce_scanner/n8n_rce_scanner.py")
     if ref.exists():
         return ref.read_text()[:4000]
-    # fallback — look for any scanner
     for p in Path(".").rglob("*.py"):
         text = p.read_text()
         if "httpx" in text and "asyncio" in text:
@@ -56,7 +53,7 @@ Today's date: {today}
 ## Existing tools in the repo (do NOT duplicate these):
 {existing_tools}
 
-## Style reference — match this structure and quality exactly:
+## Style reference -- match this structure and quality exactly:
 ```python
 {style_ref}
 ```
@@ -81,13 +78,13 @@ class** that is useful for bug bounty / red team. Requirements:
 - SQL injection or command injection
 
 **Technical requirements:**
-- Async Python 3.10+ using `httpx` and `asyncio`
+- Async Python 3.10+ using httpx and asyncio
 - Fingerprinting logic to detect the target software
 - Version extraction and comparison against patched version
-- Active probing (with `--safe` flag to skip probes and do detection-only)
-- CLI flags: `--target`, `--list`, `--output`, `--safe`, `--concurrency`, `--no-verify`
+- Active probing (with --safe flag to skip probes and do detection-only)
+- CLI flags: --target, --list, --output, --safe, --concurrency, --no-verify
 - ANSI color terminal output: CRITICAL=red, HIGH=yellow, INFO=green, RESET
-- JSON output with `--output file.json`
+- JSON output with --output file.json
 - Detailed module docstring with CVE info, usage examples, and references
 - 350-550 lines total
 
@@ -97,13 +94,13 @@ TOOL_NAME: <snake_case_name_no_extension>
 CVE: <CVE-YYYY-NNNNN or MULTI or N/A>
 DESCRIPTION: <concise one-line description for the README log>
 PYTHON_CODE:
-\`\`\`python
+```python
 <complete scanner code>
-\`\`\`
+```
 README_CONTENT:
-\`\`\`markdown
+```markdown
 <complete README.md for this tool>
-\`\`\`
+```
 """
 
 
@@ -131,7 +128,6 @@ def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
 
     text = response.choices[0].message.content
 
-    # ── Parse ──────────────────────────────────────────────────────────────────
     tool_name_m   = re.search(r"TOOL_NAME:\s*(.+)", text)
     description_m = re.search(r"DESCRIPTION:\s*(.+)", text)
     python_m      = re.search(r"PYTHON_CODE:\s*```python\n(.*?)```", text, re.DOTALL)
@@ -186,7 +182,6 @@ def git_commit_and_push(today: str, tool_name: str):
 def main():
     today = date.today().isoformat()
 
-    # Skip if today's tool already exists
     today_dir = Path(today)
     if today_dir.exists() and list(today_dir.glob("*.py")):
         print(f"[*] Tool for {today} already exists -- nothing to do.")
@@ -200,7 +195,6 @@ def main():
 
     print(f"[*] Generated tool: {tool_name}")
 
-    # Write files
     today_dir.mkdir(exist_ok=True)
 
     py_path = today_dir / f"{tool_name}.py"
