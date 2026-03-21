@@ -97,3 +97,4 @@ These tools are for use against systems you own or have explicit written authori
 ## License
 
 MIT — see [LICENSE](LICENSE)
+- **2026-03-21**: [Grafana Server-Side Request Forgery (SSRF) Scanner](2026-03-21/grafana_ssrf_cve_2025_12345_scanner.py)
