@@ -98,3 +98,4 @@ These tools are for use against systems you own or have explicit written authori
 
 MIT — see [LICENSE](LICENSE)
 - **2026-03-21**: [Grafana Server-Side Request Forgery (SSRF) Scanner](2026-03-21/grafana_ssrf_cve_2025_12345_scanner.py)
+- **2026-03-22**: [Scanner for RCE via module argument injection in Ansible < v2.15](2026-03-22/ansible_rce_cve_2026_33456_scanner.py)
