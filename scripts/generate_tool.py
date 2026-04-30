@@ -111,6 +111,26 @@ README_CONTENT:
 """
 
 
+MAX_RETRIES = 3
+
+
+def _parse_response(text: str) -> dict | None:
+    tool_name_m   = re.search(r"TOOL_NAME:\s*(.+)", text)
+    description_m = re.search(r"DESCRIPTION:\s*(.+)", text)
+    python_m      = re.search(r"PYTHON_CODE:\s*```python\n(.*?)```", text, re.DOTALL)
+    readme_m      = re.search(r"README_CONTENT:\s*```markdown\n(.*?)```", text, re.DOTALL)
+
+    if not (tool_name_m and python_m and readme_m):
+        return None
+
+    return {
+        "tool_name":   tool_name_m.group(1).strip().replace(" ", "_").lower(),
+        "description": description_m.group(1).strip() if description_m else "Security scanner",
+        "python_code": python_m.group(1),
+        "readme":      readme_m.group(1),
+    }
+
+
 def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
     client = OpenAI(
         base_url="https://models.inference.ai.azure.com",
@@ -123,40 +143,38 @@ def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
         style_ref=style_ref,
     )
 
-    print("[*] Calling GitHub Models API (gpt-4o)...")
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        max_tokens=8192,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ],
-    )
+    for attempt in range(1, MAX_RETRIES + 1):
+        print(f"[*] Calling GitHub Models API (gpt-4o) — attempt {attempt}/{MAX_RETRIES}...")
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            max_tokens=16384,
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ],
+        )
 
-    text = response.choices[0].message.content
+        finish_reason = response.choices[0].finish_reason
+        text = response.choices[0].message.content
 
-    tool_name_m   = re.search(r"TOOL_NAME:\s*(.+)", text)
-    description_m = re.search(r"DESCRIPTION:\s*(.+)", text)
-    python_m      = re.search(r"PYTHON_CODE:\s*```python\n(.*?)```", text, re.DOTALL)
-    readme_m      = re.search(r"README_CONTENT:\s*```markdown\n(.*?)```", text, re.DOTALL)
+        if finish_reason == "length":
+            print(f"[!] Response truncated (finish_reason=length) on attempt {attempt}.")
+            if attempt < MAX_RETRIES:
+                print("[*] Retrying with a shorter tool request...")
+                continue
 
-    missing = []
-    if not tool_name_m:  missing.append("TOOL_NAME")
-    if not python_m:     missing.append("PYTHON_CODE")
-    if not readme_m:     missing.append("README_CONTENT")
+        result = _parse_response(text)
+        if result:
+            return result
 
-    if missing:
-        print(f"[!] Response missing: {', '.join(missing)}")
-        print("--- Response preview ---")
-        print(text[:1000])
-        sys.exit(1)
+        print(f"[!] Response missing required sections on attempt {attempt}.")
+        print("--- Response preview (first 800 chars) ---")
+        print(text[:800])
+        if attempt < MAX_RETRIES:
+            print("[*] Retrying...")
 
-    return {
-        "tool_name":   tool_name_m.group(1).strip().replace(" ", "_").lower(),
-        "description": description_m.group(1).strip() if description_m else "Security scanner",
-        "python_code": python_m.group(1),
-        "readme":      readme_m.group(1),
-    }
+    print("[!] All attempts failed. Exiting.")
+    sys.exit(1)
 
 
 # ── File writing & git ────────────────────────────────────────────────────────
