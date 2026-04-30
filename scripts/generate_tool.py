@@ -8,6 +8,7 @@ writes it to a dated folder, updates root README.md, and commits + pushes.
 Requires env var: GITHUB_TOKEN (automatically available in GitHub Actions)
 """
 
+import ast
 import os
 import re
 import sys
@@ -164,14 +165,24 @@ def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
                 continue
 
         result = _parse_response(text)
-        if result:
-            return result
+        if not result:
+            print(f"[!] Response missing required sections on attempt {attempt}.")
+            print("--- Response preview (first 800 chars) ---")
+            print(text[:800])
+            if attempt < MAX_RETRIES:
+                print("[*] Retrying...")
+            continue
 
-        print(f"[!] Response missing required sections on attempt {attempt}.")
-        print("--- Response preview (first 800 chars) ---")
-        print(text[:800])
-        if attempt < MAX_RETRIES:
-            print("[*] Retrying...")
+        # Validate Python syntax before accepting
+        try:
+            ast.parse(result["python_code"])
+        except SyntaxError as e:
+            print(f"[!] Generated code has a syntax error on attempt {attempt}: {e}")
+            if attempt < MAX_RETRIES:
+                print("[*] Retrying...")
+            continue
+
+        return result
 
     print("[!] All attempts failed. Exiting.")
     sys.exit(1)
@@ -179,16 +190,22 @@ def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
 
 # ── File writing & git ────────────────────────────────────────────────────────
 
-def update_root_readme(today: str, tool_name: str, description: str):
+def update_root_readme(today: str, tool_name: str, description: str, cve: str = "—", category: str = "Misc"):
     readme = Path("README.md")
     content = readme.read_text()
-    new_entry = f"- **{today}**: [{description}]({today}/{tool_name}.py)"
 
-    if new_entry in content:
+    if f"{today}/{tool_name}.py" in content:
         print("[*] README.md already has this entry, skipping.")
         return
 
-    content = content.rstrip() + f"\n{new_entry}\n"
+    # Insert new row at the top of the Tools table (just after the header separator row)
+    new_row = f"| {today} | [{tool_name}.py]({today}/{tool_name}.py) | {cve} | {category} | {description} |"
+    separator = "|------|------|-----|----------|-------------|"
+    if separator in content:
+        content = content.replace(separator, separator + "\n" + new_row, 1)
+    else:
+        content = content.rstrip() + f"\n{new_row}\n"
+
     readme.write_text(content)
     print("[*] Updated README.md")
 
@@ -217,20 +234,42 @@ def main():
 
     result = call_model(today, existing_tools, style_ref)
     tool_name = result["tool_name"]
+    code = result["python_code"]
 
     print(f"[*] Generated tool: {tool_name}")
+
+    # Extract CVE and category from the generated code for the README table
+    cve_m = re.search(r"(CVE-\d{4}-\d+)", code)
+    cvss_m = re.search(r"CVSS[:\s]+(\d+\.?\d*)", code)
+    cve = cve_m.group(1) if cve_m else "—"
+    if cve != "—" and cvss_m:
+        cve = f"{cve} (CVSS {cvss_m.group(1)})"
+
+    name = tool_name.lower()
+    if any(x in name for x in ["rce", "exec", "injection", "script_console", "jobserver"]):
+        category = "RCE"
+    elif "ssrf" in name:
+        category = "SSRF"
+    elif any(x in name for x in ["auth_bypass", "unauth"]):
+        category = "Auth Bypass"
+    elif any(x in name for x in ["traversal", "path"]):
+        category = "Path Traversal"
+    elif any(x in name for x in ["exposure", "leak", "debug"]):
+        category = "Info Leak"
+    else:
+        category = "Misc"
 
     today_dir.mkdir(exist_ok=True)
 
     py_path = today_dir / f"{tool_name}.py"
-    py_path.write_text(result["python_code"])
+    py_path.write_text(code)
     print(f"[*] Written: {py_path}")
 
     readme_path = today_dir / "README.md"
     readme_path.write_text(result["readme"])
     print(f"[*] Written: {readme_path}")
 
-    update_root_readme(today, tool_name, result["description"])
+    update_root_readme(today, tool_name, result["description"], cve=cve, category=category)
     git_commit_and_push(today, tool_name)
 
     print(f"\n[+] Done! Tool published: {today}/{tool_name}.py")

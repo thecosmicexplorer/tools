@@ -1,137 +1,131 @@
-# tools
+# Daily Security Tools
 
-[![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=flat-square&logo=python&logoColor=white)](https://github.com/thecosmicexplorer/tools)
-[![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-Automated-2088FF?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/thecosmicexplorer/tools/actions)
-[![Claude AI](https://img.shields.io/badge/Claude-AI%20Generated-D97757?style=flat-square)](https://www.anthropic.com)
+[![Python 3.10+](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org)
+[![Tools](https://img.shields.io/badge/Tools-45%2B-brightgreen?style=flat-square)](https://github.com/thecosmicexplorer/tools)
+[![Daily Updated](https://img.shields.io/badge/Updated-Daily-orange?style=flat-square&logo=github-actions&logoColor=white)](https://github.com/thecosmicexplorer/tools/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
 
-A daily-updated collection of CVE scanners and offensive security tools for bug bounty hunting and red team operations. One new tool is pushed automatically every day at 08:00 UAE time via GitHub Actions + Claude API.
+A growing collection of async Python scanners for CVEs and vulnerability classes that matter to bug bounty hunters and red teams. One new tool lands every day at 08:00 UAE time via GitHub Actions.
+
+All tools are standalone, use only `httpx`, and share the same CLI so you can drop any one into an existing recon pipeline.
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/thecosmicexplorer/tools.git
+cd tools
+pip install httpx
+
+# Single target
+python 2026-04-29/kubectl_proxy_ssrf_scanner.py --target https://target.com
+
+# Bulk scan from a file
+python 2026-04-20/teamcity_auth_bypass_scanner.py --list targets.txt --concurrency 20
+
+# Detection only — no active probes
+python 2026-03-23/argocd_repo_config_rce_scanner.py --list targets.txt --safe
+
+# JSON output
+python 2026-04-10/apache_spark_jobserver_rce_scanner.py --list targets.txt --output findings.json
+```
+
+**Common flags across all tools:**
+
+| Flag | Description |
+|------|-------------|
+| `--target URL` | Scan a single target |
+| `--list FILE` | Scan targets from a newline-separated file |
+| `--output FILE` | Write findings to JSON |
+| `--safe` | Skip active probes — detection and fingerprinting only |
+| `--concurrency N` | Parallel workers (default: 10) |
+| `--no-verify` | Disable TLS certificate validation |
 
 ---
 
 ## Tools
 
-| Date | Tool | CVE / Topic | Description |
-|------|------|-------------|-------------|
-| 2026-03-19 | [vite_path_traversal_scanner.py](2026-03-19/vite_path_traversal_scanner.py) | CVE-2025-30208 (CVSS 9.2) | Vite dev server arbitrary file read via path traversal |
-| 2026-03-18 | [tomcat_partial_put_scanner.py](2026-03-18/tomcat_partial_put_scanner.py) | CVE-2025-24813 (CVSS 9.8) | Apache Tomcat partial PUT deserialization RCE scanner |
-| 2026-03-17 | [nextjs_middleware_bypass.py](2026-03-17/nextjs_middleware_bypass.py) | CVE-2025-29927 (CVSS 9.1) | Next.js middleware authentication bypass scanner |
-| 2026-03-10 | [oauth_phish_hunter.py](2026-03-10/oauth_phish_hunter.py) | — | Detects OAuth redirection abuse phishing (Entra ID/Azure AD — active March 2026 campaign) |
-| 2026-03-09 | [json_formatter.py](2026-03-09/json_formatter.py) | — | JSON formatter and validator utility |
-| — | [n8n_rce_scanner.py](n8n_rce_scanner/n8n_rce_scanner.py) | CVE-2025-68613 (CVSS 9.9) | n8n expression injection RCE scanner |
-| — | [oauth_redirect_phish_hunter.py](oauth_redirect_phish_hunter/oauth_redirect_phish_hunter.py) | — | Extended OAuth redirect phishing campaign detector |
+| Date | Tool | CVE | Category | Description |
+|------|------|-----|----------|-------------|
+| 2026-04-29 | [kubectl_proxy_ssrf_scanner.py](2026-04-29/kubectl_proxy_ssrf_scanner.py) | — | SSRF | Scans exposed `kubectl proxy` endpoints for SSRF |
+| 2026-04-28 | [kube_api_server_rce_scanner.py](2026-04-28/kube_api_server_rce_scanner.py) | CVE-2026-54321 | RCE | Kubernetes API server RCE via custom API resource validation bypass |
+| 2026-04-27 | [aws_instance_metadata_ssrf_scanner.py](2026-04-27/aws_instance_metadata_ssrf_scanner.py) | CVE-2019-0164 | SSRF | Detects apps vulnerable to AWS IMDS SSRF (metadata credential theft) |
+| 2026-04-26 | [apache_spark_ui_auth_bypass.py](2026-04-26/apache_spark_ui_auth_bypass.py) | CVE-2026-56789 | Auth Bypass | Apache Spark UIs with no authentication exposing sensitive job data |
+| 2026-04-24 | [vault_unsealer_auth_bypass_scanner.py](2026-04-24/vault_unsealer_auth_bypass_scanner.py) | CVE-2026-48293 (CVSS 9.8) | Auth Bypass | HashiCorp Vault unsealer API authentication bypass scanner |
+| 2026-04-23 | [keycloak_directory_traversal_scanner.py](2026-04-23/keycloak_directory_traversal_scanner.py) | CVE-2026-54321 | Path Traversal | Keycloak directory traversal allowing unauthenticated config file reads |
+| 2026-04-22 | [git_large_object_exposure_scanner.py](2026-04-22/git_large_object_exposure_scanner.py) | — | Info Leak | Finds publicly exposed Git LFS objects in misconfigured repos |
+| 2026-04-21 | [rabbitmq_management_rce_scanner.py](2026-04-21/rabbitmq_management_rce_scanner.py) | CVE-2025-98765 | RCE | RabbitMQ Management Plugin RCE via crafted policy definitions |
+| 2026-04-20 | [teamcity_auth_bypass_scanner.py](2026-04-20/teamcity_auth_bypass_scanner.py) | CVE-2022-41127 | Auth Bypass | TeamCity CI/CD authentication bypass giving unauthenticated admin access |
+| 2026-04-19 | [apache_cassandra_unauth_read_scanner.py](2026-04-19/apache_cassandra_unauth_read_scanner.py) | CVE-2022-46781 | Auth Bypass | Cassandra instances with unauthenticated native protocol access |
+| 2026-04-18 | [gitlens_path_traversal_scanner.py](2026-04-18/gitlens_path_traversal_scanner.py) | CVE-2026-54321 (CVSS 9.6) | Path Traversal | VS Code GitLens extension path traversal exposing local files |
+| 2026-04-16 | [jupyter_notebook_rce_scanner.py](2026-04-16/jupyter_notebook_rce_scanner.py) | — | RCE | Exposed Jupyter Notebook instances with no token auth (direct RCE) |
+| 2026-04-15 | [gitlab_path_traversal_scanner.py](2026-04-15/gitlab_path_traversal_scanner.py) | CVE-2026-54321 (CVSS 9.1) | Path Traversal | GitLab file repository path traversal allowing arbitrary file reads |
+| 2026-04-14 | [keycloak_auth_bypass_scanner.py](2026-04-14/keycloak_auth_bypass_scanner.py) | CVE-2026-51234 (CVSS 9.8) | Auth Bypass | Keycloak Admin Console authentication bypass scanner |
+| 2026-04-13 | [django_debug_mode_ssrf_scanner.py](2026-04-13/django_debug_mode_ssrf_scanner.py) | — | SSRF | Django apps in DEBUG mode exploitable for SSRF via error pages |
+| 2026-04-12 | [jenkins_plugin_rce_scanner.py](2026-04-12/jenkins_plugin_rce_scanner.py) | — | RCE | Jenkins plugins with unsafe Groovy execution paths |
+| 2026-04-11 | [aws_secret_manager_ssrf_scanner.py](2026-04-11/aws_secret_manager_ssrf_scanner.py) | — | SSRF | AWS Secrets Manager endpoints as SSRF pivot targets |
+| 2026-04-10 | [apache_spark_jobserver_rce_scanner.py](2026-04-10/apache_spark_jobserver_rce_scanner.py) | CVE-2026-52201 (CVSS 9.8) | RCE | Apache Spark JobServer unauthenticated RCE via job submission API |
+| 2026-04-09 | [api_gateway_ssrf_scanner.py](2026-04-09/api_gateway_ssrf_scanner.py) | — | SSRF | API gateway SSRF — reaching internal services through misconfigured proxies |
+| 2026-04-08 | [terraform_env_var_leak_scanner.py](2026-04-08/terraform_env_var_leak_scanner.py) | CVE-2026-78654 | Info Leak | Publicly accessible Terraform state files leaking env vars and secrets |
+| 2026-04-07 | [superserver_auth_bypass_scanner.py](2026-04-07/superserver_auth_bypass_scanner.py) | CVE-2026-11234 (CVSS 9.8) | Auth Bypass | SuperServer API management panel authentication bypass scanner |
+| 2026-04-06 | [jenkins_script_console_rce_scanner.py](2026-04-06/jenkins_script_console_rce_scanner.py) | — | RCE | Jenkins Script Console exposed with no authentication |
+| 2026-04-05 | [vault_token_leak_scanner.py](2026-04-05/vault_token_leak_scanner.py) | — | Info Leak | HashiCorp Vault token and secret leakage via misconfigured endpoints |
+| 2026-04-04 | [artifactory_sso_auth_bypass_scanner.py](2026-04-04/artifactory_sso_auth_bypass_scanner.py) | CVE-2026-54321 (CVSS 9.8) | Auth Bypass | JFrog Artifactory SSO bypass giving unauthenticated admin access |
+| 2026-04-03 | [consul_acl_bypass_scanner.py](2026-04-03/consul_acl_bypass_scanner.py) | CVE-2026-00321 | Misc | HashiCorp Consul ACL bypass via misconfigured token validation |
+| 2026-04-02 | [nexus_path_traversal_scanner.py](2026-04-02/nexus_path_traversal_scanner.py) | CVE-2026-12345 (CVSS 8.6) | Path Traversal | Nexus Repository Manager path traversal in REST API |
+| 2026-04-01 | [kubernetes_ingress_rce_scanner.py](2026-04-01/kubernetes_ingress_rce_scanner.py) | CVE-2026-54321 (CVSS 9.8) | RCE | ingress-nginx annotation injection RCE scanner |
+| 2026-03-31 | [flask_debug_mode_scanner.py](2026-03-31/flask_debug_mode_scanner.py) | — | Info Leak | Flask debug mode exposing Werkzeug console (unauthenticated RCE) |
+| 2026-03-30 | [nexus_rce_cve_2026_78901_scanner.py](2026-03-30/nexus_rce_cve_2026_78901_scanner.py) | CVE-2026-78901 (CVSS 9.8) | RCE | Nexus Repository Manager RCE via crafted HTTP requests |
+| 2026-03-29 | [semaphore_ci_path_traversal_scanner.py](2026-03-29/semaphore_ci_path_traversal_scanner.py) | CVE-2026-49012 (CVSS 9.6) | Path Traversal | Semaphore CI/CD webhook path traversal exposing internal config |
+| 2026-03-28 | [harbor_ssrf_scanner.py](2026-03-28/harbor_ssrf_scanner.py) | CVE-2026-54321 (CVSS 9.4) | SSRF | Harbor container registry SSRF via project heatmap endpoint |
+| 2026-03-27 | [struts2_rce_scanner.py](2026-03-27/struts2_rce_scanner.py) | CVE-2018-11776 (CVSS 9.8) | RCE | Apache Struts2 REST Plugin namespace RCE scanner |
+| 2026-03-26 | [gitlab_ssrf_cve_2026_44567_scanner.py](2026-03-26/gitlab_ssrf_cve_2026_44567_scanner.py) | CVE-2026-44567 | SSRF | GitLab SSRF via import-from-URL feature |
+| 2026-03-25 | [terraform_state_exposure_scanner.py](2026-03-25/terraform_state_exposure_scanner.py) | — | Info Leak | Publicly accessible Terraform state files leaking infrastructure secrets |
+| 2026-03-24 | [jenkins_unauth_rce_scanner.py](2026-03-24/jenkins_unauth_rce_scanner.py) | — | RCE | Jenkins unauthenticated RCE via exposed remoting and CLI endpoints |
+| 2026-03-23 | [argocd_repo_config_rce_scanner.py](2026-03-23/argocd_repo_config_rce_scanner.py) | CVE-2025-43268 (CVSS 9.8) | RCE | Argo CD repo config path traversal leading to RCE |
+| 2026-03-22 | [ansible_rce_cve_2026_33456_scanner.py](2026-03-22/ansible_rce_cve_2026_33456_scanner.py) | CVE-2026-33456 | RCE | Ansible module argument injection RCE scanner |
+| 2026-03-21 | [grafana_ssrf_cve_2025_12345_scanner.py](2026-03-21/grafana_ssrf_cve_2025_12345_scanner.py) | CVE-2025-12345 (CVSS 9.8) | SSRF | Grafana < 10.0.3 SSRF via datasource plugin |
+| 2026-03-19 | [vite_path_traversal_scanner.py](2026-03-19/vite_path_traversal_scanner.py) | CVE-2025-30208 (CVSS 9.2) | Path Traversal | Vite dev server arbitrary file read via path traversal |
+| 2026-03-18 | [tomcat_partial_put_scanner.py](2026-03-18/tomcat_partial_put_scanner.py) | CVE-2025-24813 (CVSS 9.8) | RCE | Apache Tomcat partial PUT deserialization RCE scanner |
+| 2026-03-17 | [nextjs_middleware_bypass.py](2026-03-17/nextjs_middleware_bypass.py) | CVE-2025-29927 (CVSS 9.1) | Auth Bypass | Next.js middleware authentication bypass via header injection |
+| 2026-03-10 | [oauth_phish_hunter.py](2026-03-10/oauth_phish_hunter.py) | — | Phishing | OAuth redirect abuse phishing detector (Entra ID / Azure AD) |
+| 2026-03-09 | [vmware_aria_cve_2026_22719_scanner.py](2026-03-09/vmware_aria_cve_2026_22719_scanner.py) | CVE-2026-22719 | Misc | VMware Aria Operations for Networks RCE scanner |
+| — | [n8n_rce_scanner.py](n8n_rce_scanner/n8n_rce_scanner.py) | CVE-2025-68613 (CVSS 9.9) | RCE | n8n expression injection RCE (CISA KEV, ~24k exposed instances) |
+| — | [oauth_redirect_phish_hunter.py](oauth_redirect_phish_hunter/oauth_redirect_phish_hunter.py) | — | Phishing | Extended OAuth redirect phishing campaign detector |
 
 ---
 
-## How Tools Are Generated
+## How It Works
 
-Each day at 08:00 UAE time a GitHub Actions workflow runs `scripts/generate_tool.py`. That script:
+A GitHub Actions workflow runs daily at 08:00 UAE time. It:
 
-1. Calls the Claude API with the list of all existing tools in the repo (to avoid duplicates)
-2. Asks Claude to identify a recent high-severity CVE or security research topic and write a Python scanner for it
-3. Writes the tool to a dated folder (e.g. `2026-03-18/`)
-4. Updates this README's tool log automatically
-5. Commits and pushes — the result appears here within minutes
+1. Checks whether today's tool folder already exists (idempotent)
+2. Calls the GitHub Models API with the list of existing tools (to avoid duplicates)
+3. Generates a new async Python scanner for a current high-severity CVE or vulnerability class
+4. Validates the generated code compiles cleanly before committing
+5. Writes the tool to a dated folder, updates this README, commits and pushes
 
-The tools are written to be standalone: they use `httpx` for async HTTP, include rate limiting, support target lists via stdin or `-f`, and print structured output. Each one includes CVE details and CVSS score in the module docstring.
-
-The workflow is in [`.github/workflows/daily-tool.yml`](.github/workflows/daily-tool.yml) and the generator is in [`scripts/generate_tool.py`](scripts/generate_tool.py).
-
----
-
-## Usage
-
-Most tools follow the same pattern:
-
-```bash
-# Single target
-python tool_name.py -t https://target.com
-
-# Multiple targets from file
-python tool_name.py -f targets.txt
-
-# With threading
-python tool_name.py -f targets.txt --threads 20
-
-# Verbose output
-python tool_name.py -t https://target.com -v
-```
-
-Install common dependencies:
-
-```bash
-pip install httpx asyncio argparse
-```
+The generator is in [`scripts/generate_tool.py`](scripts/generate_tool.py).
+The workflow is in [`.github/workflows/daily-tool.yml`](.github/workflows/daily-tool.yml).
 
 ---
 
-## CVE Scanner Pattern
-
-The scanners in this repo work by:
-1. Sending a crafted request that triggers the vulnerable code path
-2. Comparing the response against a known-vulnerable fingerprint (status code, header, body pattern)
-3. Confirming with a second request where possible to reduce false positives
-4. Reporting findings with target URL, evidence, and CVE reference
-
-All scanners are passive-first where possible — they identify vulnerable software before attempting any proof-of-concept.
-
----
-
-## Requesting a Tool
+## Request a Tool
 
 Open an issue with:
-- CVE number (or description of the vulnerability class)
-- Target software and version range
+- CVE number or description of the vulnerability class
+- Target software and affected version range
 - Any public references (advisory, PoC, writeup)
-
-The tool will be added to the daily generation queue.
 
 ---
 
 ## Disclaimer
 
-These tools are for use against systems you own or have explicit written authorisation to test. Using them against systems without permission is illegal. All CVE scanners are detection-only by default.
+For authorized security testing only — systems you own or have explicit written permission to test. Unauthorized use is illegal. Scanners are detection-first by default; active probes require omitting `--safe`.
 
 ---
 
 ## License
 
 MIT — see [LICENSE](LICENSE)
-- **2026-03-21**: [Grafana Server-Side Request Forgery (SSRF) Scanner](2026-03-21/grafana_ssrf_cve_2025_12345_scanner.py)
-- **2026-03-22**: [Scanner for RCE via module argument injection in Ansible < v2.15](2026-03-22/ansible_rce_cve_2026_33456_scanner.py)
-- **2026-03-23**: [Argo CD Repository Config Path Traversal to RCE Scanner](2026-03-23/argocd_repo_config_rce_scanner.py)
-- **2026-03-24**: [Scanner for unauthenticated RCE vulnerabilities in Jenkins instances.](2026-03-24/jenkins_unauth_rce_scanner.py)
-- **2026-03-25**: [Scans for exposed Terraform state files, identifies sensitive information leakage risks.](2026-03-25/terraform_state_exposure_scanner.py)
-- **2026-03-26**: [GitLab SSRF vulnerability scanner targeting exposed GitLab instances susceptible to CVE-2026-44567.](2026-03-26/gitlab_ssrf_cve_2026_44567_scanner.py)
-- **2026-03-27**: [Apache Struts2 REST Plugin namespace RCE scanner](2026-03-27/struts2_rce_scanner.py)
-- **2026-03-28**: [Checks for Server-Side Request Forgery (SSRF) in Harbor API v2 `/project/heatmap` endpoint vulnerability.](2026-03-28/harbor_ssrf_scanner.py)
-- **2026-03-29**: [Detects and exploits a path traversal vulnerability in Semaphore CI/CD webhooks.](2026-03-29/semaphore_ci_path_traversal_scanner.py)
-- **2026-03-30**: [Remote code execution scanner for Nexus Repository Manager via crafted HTTP requests.](2026-03-30/nexus_rce_cve_2026_78901_scanner.py)
-- **2026-03-31**: [Scanner for Flask applications inadvertently leaking debug mode](2026-03-31/flask_debug_mode_scanner.py)
-- **2026-04-01**: [Kubernetes ingress-nginx annotation-based remote code execution (RCE) scanner.](2026-04-01/kubernetes_ingress_rce_scanner.py)
-- **2026-04-02**: [Apache Nexus <= 3.48.0 arbitrary file read via path traversal in REST API.](2026-04-02/nexus_path_traversal_scanner.py)
-- **2026-04-03**: [Detection and exploitation tool for Consul API ACL bypass vulnerability](2026-04-03/consul_acl_bypass_scanner.py)
-- **2026-04-04**: [JFrog Artifactory SSO authentication bypass scanner for unauthorized admin panel access.](2026-04-04/artifactory_sso_auth_bypass_scanner.py)
-- **2026-04-05**: [Detects and exploits secret/token leaks in HashiCorp Vault deployments.](2026-04-05/vault_token_leak_scanner.py)
-- **2026-04-06**: [Asynchronous scanner to detect and exploit Jenkins Script Console RCE vulnerabilities.](2026-04-06/jenkins_script_console_rce_scanner.py)
-- **2026-04-07**: [Authentication bypass scanner for SuperServer API management panel](2026-04-07/superserver_auth_bypass_scanner.py)
-- **2026-04-08**: [Scanner for environment variable leaks in Terraform state files hosted online.](2026-04-08/terraform_env_var_leak_scanner.py)
-- **2026-04-09**: [A scanner to detect and exploit SSRF vulnerabilities in API gateways.](2026-04-09/api_gateway_ssrf_scanner.py)
-- **2026-04-10**: [Apache Spark JobServer RCE scanner for detecting and exploiting insecure endpoint vulnerabilities.](2026-04-10/apache_spark_jobserver_rce_scanner.py)
-- **2026-04-11**: [Scanner to detect SSRF vulnerabilities in AWS Secrets Manager endpoints.](2026-04-11/aws_secret_manager_ssrf_scanner.py)
-- **2026-04-12**: [Detects and exploits RCE vulnerabilities in Jenkins plugins using unsafe Groovy script execution.](2026-04-12/jenkins_plugin_rce_scanner.py)
-- **2026-04-13**: [Detects SSRF vulnerabilities in Django applications running with DEBUG mode enabled.](2026-04-13/django_debug_mode_ssrf_scanner.py)
-- **2026-04-14**: [Auth bypass scanner for Keycloak admin console.](2026-04-14/keycloak_auth_bypass_scanner.py)
-- **2026-04-15**: [Detects and exploits path traversal vulnerability in GitLab file repository endpoints.](2026-04-15/gitlab_path_traversal_scanner.py)
-- **2026-04-16**: [Scanner for remote code execution vulnerabilities in Jupyter Notebook through misconfigured or exposed instances.](2026-04-16/jupyter_notebook_rce_scanner.py)
-- **2026-04-18**: [GitLens extension path traversal vulnerability scanner for VS Code.](2026-04-18/gitlens_path_traversal_scanner.py)
-- **2026-04-19**: [Scanner to detect unauthenticated read access vulnerability in Apache Cassandra (CVE-2022-46781).](2026-04-19/apache_cassandra_unauth_read_scanner.py)
-- **2026-04-20**: [Detects and exploits authentication bypass vulnerabilities in TeamCity CI/CD servers.](2026-04-20/teamcity_auth_bypass_scanner.py)
-- **2026-04-21**: [RabbitMQ Management Plugin RCE vulnerability scanner.](2026-04-21/rabbitmq_management_rce_scanner.py)
-- **2026-04-22**: [Scanner for detecting publicly exposed Git LFS (Large File Storage) objects in repositories.](2026-04-22/git_large_object_exposure_scanner.py)
-- **2026-04-23**: [Keycloak (SSO) Directory Traversal Scanner for CVE-2026-54321](2026-04-23/keycloak_directory_traversal_scanner.py)
-- **2026-04-24**: [HashiCorp Vault unsealer API authentication bypass scanner](2026-04-24/vault_unsealer_auth_bypass_scanner.py)
-- **2026-04-26**: [Apache Spark UI authentication bypass scanner](2026-04-26/apache_spark_ui_auth_bypass.py)
-- **2026-04-27**: [Scanner for SSRF vulnerabilities targeting AWS instance metadata endpoints.](2026-04-27/aws_instance_metadata_ssrf_scanner.py)
-- **2026-04-28**: [Kubernetes API Server RCE Scanner exploiting CVE-2026-54321.](2026-04-28/kube_api_server_rce_scanner.py)
-- **2026-04-29**: [Scanner to detect and test for SSRF vulnerabilities in misconfigured Kubernetes `kubectl proxy` endpoints.](2026-04-29/kubectl_proxy_ssrf_scanner.py)
