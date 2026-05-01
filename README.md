@@ -48,6 +48,7 @@ python 2026-04-10/apache_spark_jobserver_rce_scanner.py --list targets.txt --out
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-01 | [jenkins_config_exposure_scanner.py](2026-05-01/jenkins_config_exposure_scanner.py) | CVE-2021-21650 | Info Leak | Detects and exploits insecure configuration exposure vulnerabilities in Jenkins servers. |
 | 2026-04-29 | [kubectl_proxy_ssrf_scanner.py](2026-04-29/kubectl_proxy_ssrf_scanner.py) | — | SSRF | Scans exposed `kubectl proxy` endpoints for SSRF |
 | 2026-04-28 | [kube_api_server_rce_scanner.py](2026-04-28/kube_api_server_rce_scanner.py) | CVE-2026-54321 | RCE | Kubernetes API server RCE via custom API resource validation bypass |
 | 2026-04-27 | [aws_instance_metadata_ssrf_scanner.py](2026-04-27/aws_instance_metadata_ssrf_scanner.py) | CVE-2019-0164 | SSRF | Detects apps vulnerable to AWS IMDS SSRF (metadata credential theft) |
