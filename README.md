@@ -48,6 +48,7 @@ python 2026-04-10/apache_spark_jobserver_rce_scanner.py --list targets.txt --out
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-02 | [caddy_directory_traversal_scanner.py](2026-05-02/caddy_directory_traversal_scanner.py) | CVE-2025-4923 (CVSS 9.1) | Path Traversal | Detects and actively probes for a directory traversal vulnerability in Caddy web servers. |
 | 2026-05-01 | [jenkins_config_exposure_scanner.py](2026-05-01/jenkins_config_exposure_scanner.py) | CVE-2021-21650 | Info Leak | Detects and exploits insecure configuration exposure vulnerabilities in Jenkins servers. |
 | 2026-04-29 | [kubectl_proxy_ssrf_scanner.py](2026-04-29/kubectl_proxy_ssrf_scanner.py) | — | SSRF | Scans exposed `kubectl proxy` endpoints for SSRF |
 | 2026-04-28 | [kube_api_server_rce_scanner.py](2026-04-28/kube_api_server_rce_scanner.py) | CVE-2026-54321 | RCE | Kubernetes API server RCE via custom API resource validation bypass |
