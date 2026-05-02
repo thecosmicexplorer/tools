@@ -3,12 +3,13 @@
 Daily Security Tool Generator
 ==============================
 Called by GitHub Actions daily. Uses GitHub Models API (free) to generate a new CVE scanner,
-writes it to a dated folder, updates root README.md, and commits + pushes.
+writes it to the appropriate category folder, updates tools.json and README.md, and pushes.
 
 Requires env var: GITHUB_TOKEN (automatically available in GitHub Actions)
 """
 
 import ast
+import json
 import os
 import re
 import sys
@@ -17,6 +18,32 @@ from datetime import date
 from pathlib import Path
 
 from openai import OpenAI
+
+
+# ── Category logic ────────────────────────────────────────────────────────────
+
+CATEGORIES = {
+    "rce":            lambda n: any(x in n for x in ["rce", "exec", "injection", "script_console", "jobserver"]),
+    "ssrf":           lambda n: "ssrf" in n,
+    "auth-bypass":    lambda n: any(x in n for x in ["auth_bypass", "unauth"]),
+    "path-traversal": lambda n: any(x in n for x in ["traversal", "path_traversal"]),
+    "info-leak":      lambda n: any(x in n for x in ["exposure", "leak", "debug"]),
+    "phishing":       lambda n: any(x in n for x in ["phish", "oauth"]),
+}
+
+TARGET_KEYWORDS = [
+    "jenkins", "kubernetes", "kube", "gitlab", "vault", "terraform", "grafana",
+    "nexus", "keycloak", "ansible", "teamcity", "rabbitmq", "django", "flask",
+    "spark", "consul", "harbor", "nginx", "struts", "argocd", "jupyter",
+    "cassandra", "vite", "tomcat", "nextjs", "aws", "caddy", "gitlens",
+]
+
+def get_category(tool_name: str) -> str:
+    n = tool_name.lower()
+    for cat, fn in CATEGORIES.items():
+        if fn(n):
+            return cat
+    return "misc"
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -31,14 +58,23 @@ def get_existing_tools() -> str:
 
 
 def get_style_reference() -> str:
-    ref = Path("n8n_rce_scanner/n8n_rce_scanner.py")
-    if ref.exists():
-        return ref.read_text()[:4000]
     for p in Path(".").rglob("*.py"):
-        text = p.read_text()
-        if "httpx" in text and "asyncio" in text:
-            return text[:4000]
+        if p.parts[0] in ("rce", "ssrf", "auth-bypass", "path-traversal", "info-leak", "phishing", "misc", "scripts"):
+            text = p.read_text(errors="replace")
+            if "httpx" in text and "asyncio" in text and len(text) > 3000:
+                return text[:4000]
     return ""
+
+
+def load_tools_index() -> list:
+    p = Path("tools.json")
+    if p.exists():
+        return json.loads(p.read_text())
+    return []
+
+
+def save_tools_index(tools: list):
+    Path("tools.json").write_text(json.dumps(tools, indent=2))
 
 
 # ── GitHub Models API call ────────────────────────────────────────────────────
@@ -161,7 +197,7 @@ def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
         if finish_reason == "length":
             print(f"[!] Response truncated (finish_reason=length) on attempt {attempt}.")
             if attempt < MAX_RETRIES:
-                print("[*] Retrying with a shorter tool request...")
+                print("[*] Retrying...")
                 continue
 
         result = _parse_response(text)
@@ -173,7 +209,6 @@ def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
                 print("[*] Retrying...")
             continue
 
-        # Validate Python syntax before accepting
         try:
             ast.parse(result["python_code"])
         except SyntaxError as e:
@@ -188,18 +223,43 @@ def call_model(today: str, existing_tools: str, style_ref: str) -> dict:
     sys.exit(1)
 
 
-# ── File writing & git ────────────────────────────────────────────────────────
+# ── File writing & index updates ──────────────────────────────────────────────
 
-def update_root_readme(today: str, tool_name: str, description: str, cve: str = "—", category: str = "Misc"):
+def update_tools_json(today: str, tool_name: str, description: str,
+                      category: str, cve: str | None, cvss: float | None, targets: list[str]):
+    tools = load_tools_index()
+
+    # Skip if today's tool is already indexed
+    if any(t["date"] == today for t in tools):
+        print("[*] tools.json already has today's entry, skipping.")
+        return
+
+    entry = {
+        "name":        tool_name,
+        "filename":    f"{tool_name}.py",
+        "category":    category,
+        "path":        f"{category}/{tool_name}.py",
+        "date":        today,
+        "cve":         cve,
+        "cvss":        cvss,
+        "description": description,
+        "targets":     targets,
+    }
+    tools.insert(0, entry)
+    save_tools_index(tools)
+    print(f"[*] Updated tools.json ({len(tools)} tools)")
+
+
+def update_root_readme(today: str, tool_name: str, description: str,
+                       category: str, cve: str = "—"):
     readme = Path("README.md")
     content = readme.read_text()
 
-    if f"{today}/{tool_name}.py" in content:
+    if f"{category}/{tool_name}.py" in content:
         print("[*] README.md already has this entry, skipping.")
         return
 
-    # Insert new row at the top of the Tools table (just after the header separator row)
-    new_row = f"| {today} | [{tool_name}.py]({today}/{tool_name}.py) | {cve} | {category} | {description} |"
+    new_row = f"| {today} | [{tool_name}.py]({category}/{tool_name}.py) | {cve} | {category} | {description} |"
     separator = "|------|------|-----|----------|-------------|"
     if separator in content:
         content = content.replace(separator, separator + "\n" + new_row, 1)
@@ -210,13 +270,13 @@ def update_root_readme(today: str, tool_name: str, description: str, cve: str = 
     print("[*] Updated README.md")
 
 
-def git_commit_and_push(today: str, tool_name: str):
-    run(["git", "config", "user.name", "thecosmicexplorer"])
+def git_commit_and_push(category: str, tool_name: str, today: str):
+    run(["git", "config", "user.name",  "thecosmicexplorer"])
     run(["git", "config", "user.email", "120761069+thecosmicexplorer@users.noreply.github.com"])
-    run(["git", "add", today, "README.md"])
-    run(["git", "commit", "-m", f"feat: add {tool_name} ({today})"])
+    run(["git", "add", category, "tools.json", "README.md"])
+    run(["git", "commit", "-m", f"feat({category}): add {tool_name} ({today})"])
     run(["git", "push"])
-    print(f"[+] Pushed {tool_name} to origin")
+    print(f"[+] Pushed {category}/{tool_name}.py to origin")
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -224,9 +284,10 @@ def git_commit_and_push(today: str, tool_name: str):
 def main():
     today = date.today().isoformat()
 
-    today_dir = Path(today)
-    if today_dir.exists() and list(today_dir.glob("*.py")):
-        print(f"[*] Tool for {today} already exists -- nothing to do.")
+    # Idempotency check via tools.json
+    tools = load_tools_index()
+    if any(t["date"] == today for t in tools):
+        print(f"[*] Tool for {today} already exists in tools.json -- nothing to do.")
         sys.exit(0)
 
     existing_tools = get_existing_tools()
@@ -234,45 +295,39 @@ def main():
 
     result = call_model(today, existing_tools, style_ref)
     tool_name = result["tool_name"]
-    code = result["python_code"]
+    code      = result["python_code"]
 
     print(f"[*] Generated tool: {tool_name}")
 
-    # Extract CVE and category from the generated code for the README table
-    cve_m = re.search(r"(CVE-\d{4}-\d+)", code)
+    # Derive metadata from generated code
+    cve_m  = re.search(r"(CVE-\d{4}-\d+)", code)
     cvss_m = re.search(r"CVSS[:\s]+(\d+\.?\d*)", code)
-    cve = cve_m.group(1) if cve_m else "—"
-    if cve != "—" and cvss_m:
-        cve = f"{cve} (CVSS {cvss_m.group(1)})"
+    cve    = cve_m.group(1) if cve_m else None
+    cvss   = float(cvss_m.group(1)) if cvss_m else None
+    cve_display = f"{cve} (CVSS {cvss})" if (cve and cvss) else (cve or "—")
+    targets = [k for k in TARGET_KEYWORDS if k in tool_name.lower()]
+    category = get_category(tool_name)
 
-    name = tool_name.lower()
-    if any(x in name for x in ["rce", "exec", "injection", "script_console", "jobserver"]):
-        category = "RCE"
-    elif "ssrf" in name:
-        category = "SSRF"
-    elif any(x in name for x in ["auth_bypass", "unauth"]):
-        category = "Auth Bypass"
-    elif any(x in name for x in ["traversal", "path"]):
-        category = "Path Traversal"
-    elif any(x in name for x in ["exposure", "leak", "debug"]):
-        category = "Info Leak"
-    else:
-        category = "Misc"
+    # Write to category folder
+    cat_dir = Path(category)
+    cat_dir.mkdir(exist_ok=True)
 
-    today_dir.mkdir(exist_ok=True)
-
-    py_path = today_dir / f"{tool_name}.py"
+    py_path = cat_dir / f"{tool_name}.py"
     py_path.write_text(code)
     print(f"[*] Written: {py_path}")
 
-    readme_path = today_dir / "README.md"
-    readme_path.write_text(result["readme"])
-    print(f"[*] Written: {readme_path}")
+    # Per-tool README inside the category folder
+    tool_readme = cat_dir / f"{tool_name}.md"
+    tool_readme.write_text(result["readme"])
+    print(f"[*] Written: {tool_readme}")
 
-    update_root_readme(today, tool_name, result["description"], cve=cve, category=category)
-    git_commit_and_push(today, tool_name)
+    update_tools_json(today, tool_name, result["description"],
+                      category, cve, cvss, targets)
+    update_root_readme(today, tool_name, result["description"],
+                       category, cve_display)
+    git_commit_and_push(category, tool_name, today)
 
-    print(f"\n[+] Done! Tool published: {today}/{tool_name}.py")
+    print(f"\n[+] Done! Tool published: {category}/{tool_name}.py")
 
 
 if __name__ == "__main__":

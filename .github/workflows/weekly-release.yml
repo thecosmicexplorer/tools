@@ -1,0 +1,81 @@
+name: Weekly Release
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'   # Every Monday 08:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release notes
+        id: notes
+        run: |
+          python3 << 'PYEOF'
+          import json, os
+          from datetime import date, timedelta
+
+          tools = json.loads(open("tools.json").read())
+          today = date.today()
+          week_ago = (today - timedelta(days=7)).isoformat()
+
+          week_tools = [t for t in tools if t.get("date", "") >= week_ago]
+          week_tools.sort(key=lambda t: t.get("date",""), reverse=True)
+
+          tag = f"week-of-{today.isoformat()}"
+          title = f"Week of {today.strftime('%B %-d, %Y')} — {len(week_tools)} new tool{'s' if len(week_tools) != 1 else ''}"
+
+          lines = [f"## {title}", ""]
+          if week_tools:
+              cat_groups = {}
+              for t in week_tools:
+                  cat_groups.setdefault(t["category"], []).append(t)
+              cat_order = ["rce","ssrf","auth-bypass","path-traversal","info-leak","phishing","misc"]
+              for cat in cat_order:
+                  if cat not in cat_groups: continue
+                  label = {"rce":"🔴 RCE","ssrf":"🟡 SSRF","auth-bypass":"🔵 Auth Bypass",
+                           "path-traversal":"🟣 Path Traversal","info-leak":"🟠 Info Leak",
+                           "phishing":"🟤 Phishing","misc":"⚪ Misc"}.get(cat, cat)
+                  lines.append(f"### {label}")
+                  for t in cat_groups[cat]:
+                      cve = f" · `{t['cve']}`" if t.get("cve") else ""
+                      lines.append(f"- [`{t['filename']}`](https://github.com/thecosmicexplorer/tools/blob/main/{t['path']}){cve} — {t['description']}")
+                  lines.append("")
+          else:
+              lines.append("No new tools this week.")
+
+          lines += ["---", "**Install:** `pip install httpx`",
+                    "**Run:** `python <category>/<tool>.py --target https://target.com`",
+                    "**Site:** https://thecosmicexplorer.github.io/tools"]
+
+          body = "\n".join(lines)
+          with open(os.environ["GITHUB_OUTPUT"], "a") as f:
+              f.write(f"tag={tag}\n")
+              f.write(f"title={title}\n")
+
+          with open("RELEASE_NOTES.md", "w") as f:
+              f.write(body)
+          print(body)
+          PYEOF
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.notes.outputs.tag }}"
+          TITLE="${{ steps.notes.outputs.title }}"
+          # Delete tag if it already exists (re-run safety)
+          git tag -d "$TAG" 2>/dev/null || true
+          git push origin ":refs/tags/$TAG" 2>/dev/null || true
+          gh release create "$TAG" \
+            --title "$TITLE" \
+            --notes-file RELEASE_NOTES.md

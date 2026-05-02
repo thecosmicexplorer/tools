@@ -1,0 +1,69 @@
+name: 🛠️ Tool Request
+description: Request a new CVE scanner or security tool
+title: "[Request] <tool name or CVE>"
+labels: ["tool-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping grow this library! Fill in as much as you know — the more detail, the better the tool.
+
+  - type: input
+    id: cve
+    attributes:
+      label: CVE / Vulnerability
+      description: CVE number if applicable, or describe the vulnerability class
+      placeholder: CVE-2025-XXXXX or "Kubernetes API unauthenticated access"
+    validations:
+      required: true
+
+  - type: input
+    id: software
+    attributes:
+      label: Target Software
+      description: What software / service does this affect?
+      placeholder: e.g. Jenkins, GitLab, HashiCorp Vault
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Affected Versions
+      description: Which versions are vulnerable?
+      placeholder: e.g. < 2.387.1
+
+  - type: dropdown
+    id: vuln_class
+    attributes:
+      label: Vulnerability Class
+      options:
+        - RCE (Remote Code Execution)
+        - SSRF (Server-Side Request Forgery)
+        - Authentication Bypass
+        - Path / Directory Traversal
+        - Info Leak / Exposure
+        - Injection (SQL, Command, etc.)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity (CVSS)
+      options:
+        - Critical (9.0 – 10.0)
+        - High (7.0 – 8.9)
+        - Medium (4.0 – 6.9)
+        - Low (< 4.0)
+        - Unknown
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to NVD advisory, PoC, writeup, Shodan dork, etc.
+      placeholder: |
+        - https://nvd.nist.gov/vuln/detail/CVE-...
+        - https://blog.example.com/writeup

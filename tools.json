@@ -1,0 +1,630 @@
+[
+  {
+    "name": "caddy_directory_traversal_scanner",
+    "filename": "caddy_directory_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/caddy_directory_traversal_scanner.py",
+    "date": "2026-05-02",
+    "cve": "CVE-2025-4923",
+    "cvss": 9.1,
+    "description": "This script scans Caddy web servers for a directory traversal vulnerability",
+    "targets": [
+      "caddy"
+    ]
+  },
+  {
+    "name": "jenkins_config_exposure_scanner",
+    "filename": "jenkins_config_exposure_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/jenkins_config_exposure_scanner.py",
+    "date": "2026-05-01",
+    "cve": "CVE-2021-21650",
+    "cvss": null,
+    "description": "This scanner detects instances of Jenkins exposed to the internet, checks for insecure configuration file exposure,",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
+    "name": "kubectl_proxy_ssrf_scanner",
+    "filename": "kubectl_proxy_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/kubectl_proxy_ssrf_scanner.py",
+    "date": "2026-04-29",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans publicly exposed Kubernetes `kubectl proxy` endpoints for Server-Side",
+    "targets": [
+      "kube"
+    ]
+  },
+  {
+    "name": "kube_api_server_rce_scanner",
+    "filename": "kube_api_server_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/kube_api_server_rce_scanner.py",
+    "date": "2026-04-28",
+    "cve": "CVE-2026-54321",
+    "cvss": null,
+    "description": "This tool scans Kubernetes API servers for CVE-2026-54321, a high-impact remote",
+    "targets": [
+      "kube"
+    ]
+  },
+  {
+    "name": "aws_instance_metadata_ssrf_scanner",
+    "filename": "aws_instance_metadata_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/aws_instance_metadata_ssrf_scanner.py",
+    "date": "2026-04-27",
+    "cve": "CVE-2019-0164",
+    "cvss": null,
+    "description": "This tool scans for Server-Side Request Forgery (SSRF) vulnerabilities targeting AWS instance metadata",
+    "targets": [
+      "aws"
+    ]
+  },
+  {
+    "name": "apache_spark_ui_auth_bypass",
+    "filename": "apache_spark_ui_auth_bypass.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/apache_spark_ui_auth_bypass.py",
+    "date": "2026-04-26",
+    "cve": "CVE-2026-56789",
+    "cvss": null,
+    "description": "Scans for improperly configured Apache Spark UIs that allow access to sensitive",
+    "targets": [
+      "spark"
+    ]
+  },
+  {
+    "name": "vault_unsealer_auth_bypass_scanner",
+    "filename": "vault_unsealer_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/vault_unsealer_auth_bypass_scanner.py",
+    "date": "2026-04-24",
+    "cve": "CVE-2026-48293",
+    "cvss": 9.8,
+    "description": "Scans for misconfigured or vulnerable HashiCorp Vault instances allowing",
+    "targets": [
+      "vault"
+    ]
+  },
+  {
+    "name": "keycloak_directory_traversal_scanner",
+    "filename": "keycloak_directory_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/keycloak_directory_traversal_scanner.py",
+    "date": "2026-04-23",
+    "cve": "CVE-2026-54321",
+    "cvss": null,
+    "description": "This script checks for the presence of a directory traversal vulnerability in Keycloak instances.",
+    "targets": [
+      "keycloak"
+    ]
+  },
+  {
+    "name": "git_large_object_exposure_scanner",
+    "filename": "git_large_object_exposure_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/git_large_object_exposure_scanner.py",
+    "date": "2026-04-22",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans for publicly exposed Git repositories that use Large File Storage (LFS)",
+    "targets": [
+      "git"
+    ]
+  },
+  {
+    "name": "rabbitmq_management_rce_scanner",
+    "filename": "rabbitmq_management_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/rabbitmq_management_rce_scanner.py",
+    "date": "2026-04-21",
+    "cve": "CVE-2025-98765",
+    "cvss": null,
+    "description": "This tool scans for RabbitMQ Management Plugin instances vulnerable to CVE-2025-98765,",
+    "targets": [
+      "rabbitmq",
+      "rabbitmq"
+    ]
+  },
+  {
+    "name": "teamcity_auth_bypass_scanner",
+    "filename": "teamcity_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/teamcity_auth_bypass_scanner.py",
+    "date": "2026-04-20",
+    "cve": "CVE-2022-41127",
+    "cvss": null,
+    "description": "This scanner detects TeamCity CI/CD instances and checks for known authentication bypass vulnerabilities, including impr",
+    "targets": [
+      "teamcity"
+    ]
+  },
+  {
+    "name": "apache_cassandra_unauth_read_scanner",
+    "filename": "apache_cassandra_unauth_read_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/apache_cassandra_unauth_read_scanner.py",
+    "date": "2026-04-19",
+    "cve": "CVE-2022-46781",
+    "cvss": null,
+    "description": "Scans for Apache Cassandra database servers and verifies if they are vulnerable",
+    "targets": [
+      "cassandra"
+    ]
+  },
+  {
+    "name": "gitlens_path_traversal_scanner",
+    "filename": "gitlens_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/gitlens_path_traversal_scanner.py",
+    "date": "2026-04-18",
+    "cve": "CVE-2026-54321",
+    "cvss": 9.6,
+    "description": "Scans VS Code installations and extensions to detect instances of the vulnerable GitLens.",
+    "targets": [
+      "gitlens",
+      "git"
+    ]
+  },
+  {
+    "name": "jupyter_notebook_rce_scanner",
+    "filename": "jupyter_notebook_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/jupyter_notebook_rce_scanner.py",
+    "date": "2026-04-16",
+    "cve": null,
+    "cvss": null,
+    "description": "This script scans for improperly configured or exposed Jupyter Notebook instances",
+    "targets": [
+      "jupyter"
+    ]
+  },
+  {
+    "name": "gitlab_path_traversal_scanner",
+    "filename": "gitlab_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/gitlab_path_traversal_scanner.py",
+    "date": "2026-04-15",
+    "cve": "CVE-2026-54321",
+    "cvss": 9.1,
+    "description": "Scans for the GitLab path traversal vulnerability, identified as CVE-2026-54321",
+    "targets": [
+      "gitlab",
+      "git"
+    ]
+  },
+  {
+    "name": "keycloak_auth_bypass_scanner",
+    "filename": "keycloak_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/keycloak_auth_bypass_scanner.py",
+    "date": "2026-04-14",
+    "cve": "CVE-2026-51234",
+    "cvss": 9.8,
+    "description": "This script scans for Keycloak Admin Console instances vulnerable to an",
+    "targets": [
+      "keycloak"
+    ]
+  },
+  {
+    "name": "django_debug_mode_ssrf_scanner",
+    "filename": "django_debug_mode_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/django_debug_mode_ssrf_scanner.py",
+    "date": "2026-04-13",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans for Django web applications running with DEBUG mode enabled and probes for",
+    "targets": [
+      "django"
+    ]
+  },
+  {
+    "name": "jenkins_plugin_rce_scanner",
+    "filename": "jenkins_plugin_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/jenkins_plugin_rce_scanner.py",
+    "date": "2026-04-12",
+    "cve": null,
+    "cvss": null,
+    "description": "This script scans Jenkins instances for plugins vulnerable to remote code execution (RCE) via unsafe Groovy script execu",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
+    "name": "aws_secret_manager_ssrf_scanner",
+    "filename": "aws_secret_manager_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/aws_secret_manager_ssrf_scanner.py",
+    "date": "2026-04-11",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans AWS Secrets Manager endpoints for potential server-side request forgery (SSRF) vulnerabilities.",
+    "targets": [
+      "aws"
+    ]
+  },
+  {
+    "name": "apache_spark_jobserver_rce_scanner",
+    "filename": "apache_spark_jobserver_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/apache_spark_jobserver_rce_scanner.py",
+    "date": "2026-04-10",
+    "cve": "CVE-2026-52201",
+    "cvss": 9.8,
+    "description": "Scans for instances of Apache Spark JobServer that are vulnerable to Remote Code Execution (RCE)",
+    "targets": [
+      "spark"
+    ]
+  },
+  {
+    "name": "api_gateway_ssrf_scanner",
+    "filename": "api_gateway_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/api_gateway_ssrf_scanner.py",
+    "date": "2026-04-09",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans API gateways to detect and assess potential Server-Side Request Forgery (SSRF) vulnerabilities.",
+    "targets": []
+  },
+  {
+    "name": "terraform_env_var_leak_scanner",
+    "filename": "terraform_env_var_leak_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/terraform_env_var_leak_scanner.py",
+    "date": "2026-04-08",
+    "cve": "CVE-2026-78654",
+    "cvss": null,
+    "description": "This tool scans for publicly accessible Terraform state files (.tfstate) and identifies",
+    "targets": [
+      "terraform"
+    ]
+  },
+  {
+    "name": "superserver_auth_bypass_scanner",
+    "filename": "superserver_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/superserver_auth_bypass_scanner.py",
+    "date": "2026-04-07",
+    "cve": "CVE-2026-11234",
+    "cvss": 9.8,
+    "description": "Scans and identifies vulnerable instances of the SuperServer API management",
+    "targets": [
+      "superserver"
+    ]
+  },
+  {
+    "name": "jenkins_script_console_rce_scanner",
+    "filename": "jenkins_script_console_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/jenkins_script_console_rce_scanner.py",
+    "date": "2026-04-06",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans for open or accessible Jenkins instances that expose the Script Console,",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
+    "name": "vault_token_leak_scanner",
+    "filename": "vault_token_leak_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/vault_token_leak_scanner.py",
+    "date": "2026-04-05",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans for publicly exposed HashiCorp Vault instances and attempts to detect",
+    "targets": [
+      "vault"
+    ]
+  },
+  {
+    "name": "artifactory_sso_auth_bypass_scanner",
+    "filename": "artifactory_sso_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/artifactory_sso_auth_bypass_scanner.py",
+    "date": "2026-04-04",
+    "cve": "CVE-2026-54321",
+    "cvss": 9.8,
+    "description": "Scans JFrog Artifactory instances to detect a critical authentication bypass vulnerability (CVE-2026-54321, CVSS 9.8)",
+    "targets": []
+  },
+  {
+    "name": "consul_acl_bypass_scanner",
+    "filename": "consul_acl_bypass_scanner.py",
+    "category": "misc",
+    "path": "misc/consul_acl_bypass_scanner.py",
+    "date": "2026-04-03",
+    "cve": "CVE-2026-00321",
+    "cvss": null,
+    "description": "This scanner detects and optionally probes for vulnerabilities in the HashiCorp Consul API ACL system,",
+    "targets": [
+      "consul"
+    ]
+  },
+  {
+    "name": "nexus_path_traversal_scanner",
+    "filename": "nexus_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/nexus_path_traversal_scanner.py",
+    "date": "2026-04-02",
+    "cve": "CVE-2026-12345",
+    "cvss": 8.6,
+    "description": "Scans for Apache Nexus Repository Manager instances exposed to the internet and attempts",
+    "targets": [
+      "nexus"
+    ]
+  },
+  {
+    "name": "kubernetes_ingress_rce_scanner",
+    "filename": "kubernetes_ingress_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/kubernetes_ingress_rce_scanner.py",
+    "date": "2026-04-01",
+    "cve": "CVE-2026-54321",
+    "cvss": 9.8,
+    "description": "This script scans for instances of ingress-nginx in Kubernetes clusters vulnerable to the",
+    "targets": [
+      "kubernetes",
+      "kube"
+    ]
+  },
+  {
+    "name": "flask_debug_mode_scanner",
+    "filename": "flask_debug_mode_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/flask_debug_mode_scanner.py",
+    "date": "2026-03-31",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans for Flask web applications running in debug mode, which can expose a remote code execution risk",
+    "targets": [
+      "flask"
+    ]
+  },
+  {
+    "name": "nexus_rce_cve_2026_78901_scanner",
+    "filename": "nexus_rce_cve_2026_78901_scanner.py",
+    "category": "rce",
+    "path": "rce/nexus_rce_cve_2026_78901_scanner.py",
+    "date": "2026-03-30",
+    "cve": "CVE-2026-78901",
+    "cvss": 9.8,
+    "description": "Scans for Nexus Repository Manager instances vulnerable to an authenticated",
+    "targets": [
+      "nexus"
+    ]
+  },
+  {
+    "name": "semaphore_ci_path_traversal_scanner",
+    "filename": "semaphore_ci_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/semaphore_ci_path_traversal_scanner.py",
+    "date": "2026-03-29",
+    "cve": "CVE-2026-49012",
+    "cvss": 9.6,
+    "description": "Scans for exposed Semaphore CI/CD instances that are vulnerable to",
+    "targets": []
+  },
+  {
+    "name": "harbor_ssrf_scanner",
+    "filename": "harbor_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/harbor_ssrf_scanner.py",
+    "date": "2026-03-28",
+    "cve": "CVE-2026-54321",
+    "cvss": 9.4,
+    "description": "This tool scans for Harbor container registry instances vulnerable to a Server-Side Request Forgery (SSRF) vulnerability",
+    "targets": [
+      "harbor"
+    ]
+  },
+  {
+    "name": "struts2_rce_scanner",
+    "filename": "struts2_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/struts2_rce_scanner.py",
+    "date": "2026-03-27",
+    "cve": "CVE-2018-11776",
+    "cvss": 9.8,
+    "description": "This is a vulnerability scanner for Apache Struts2 REST Plugin namespace",
+    "targets": [
+      "struts"
+    ]
+  },
+  {
+    "name": "gitlab_ssrf_cve_2026_44567_scanner",
+    "filename": "gitlab_ssrf_cve_2026_44567_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/gitlab_ssrf_cve_2026_44567_scanner.py",
+    "date": "2026-03-26",
+    "cve": "CVE-2026-44567",
+    "cvss": null,
+    "description": "Scans for exposed GitLab instances and checks whether they are vulnerable to the GitLab SSRF (Server-Side Request Forger",
+    "targets": [
+      "gitlab",
+      "git"
+    ]
+  },
+  {
+    "name": "terraform_state_exposure_scanner",
+    "filename": "terraform_state_exposure_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/terraform_state_exposure_scanner.py",
+    "date": "2026-03-25",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans for publicly accessible Terraform state files, which may leak sensitive",
+    "targets": [
+      "terraform"
+    ]
+  },
+  {
+    "name": "jenkins_unauth_rce_scanner",
+    "filename": "jenkins_unauth_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/jenkins_unauth_rce_scanner.py",
+    "date": "2026-03-24",
+    "cve": null,
+    "cvss": null,
+    "description": "This tool detects and exploits certain unauthenticated remote code execution (RCE) vulnerabilities",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
+    "name": "argocd_repo_config_rce_scanner",
+    "filename": "argocd_repo_config_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/argocd_repo_config_rce_scanner.py",
+    "date": "2026-03-23",
+    "cve": "CVE-2025-43268",
+    "cvss": 9.8,
+    "description": "This tool scans for Argo CD instances vulnerable to the path traversal vulnerability (CVE-2025-43268, CVSS 9.8)",
+    "targets": [
+      "argocd"
+    ]
+  },
+  {
+    "name": "ansible_rce_cve_2026_33456_scanner",
+    "filename": "ansible_rce_cve_2026_33456_scanner.py",
+    "category": "rce",
+    "path": "rce/ansible_rce_cve_2026_33456_scanner.py",
+    "date": "2026-03-22",
+    "cve": "CVE-2026-33456",
+    "cvss": null,
+    "description": "This script scans for Ansible servers vulnerable to the CVE-2026-33456 bug, a remote",
+    "targets": [
+      "ansible"
+    ]
+  },
+  {
+    "name": "grafana_ssrf_cve_2025_12345_scanner",
+    "filename": "grafana_ssrf_cve_2025_12345_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/grafana_ssrf_cve_2025_12345_scanner.py",
+    "date": "2026-03-21",
+    "cve": "CVE-2025-12345",
+    "cvss": 9.8,
+    "description": "Scans for vulnerable Grafana instances (all versions < 10.0.3) and",
+    "targets": [
+      "grafana"
+    ]
+  },
+  {
+    "name": "vite_path_traversal_scanner",
+    "filename": "vite_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/vite_path_traversal_scanner.py",
+    "date": "2026-03-19",
+    "cve": "CVE-2025-30208",
+    "cvss": 9.2,
+    "description": "Scans for exposed Vite development servers vulnerable to an unauthenticated",
+    "targets": [
+      "vite"
+    ]
+  },
+  {
+    "name": "cisco_sdwan_scanner",
+    "filename": "cisco_sdwan_scanner.py",
+    "category": "misc",
+    "path": "misc/cisco_sdwan_scanner.py",
+    "date": "2026-03-18",
+    "cve": "CVE-2026-20122",
+    "cvss": 5.4,
+    "description": "Detects and assesses Cisco Catalyst SD-WAN Manager (vManage) instances for",
+    "targets": [
+      "cisco"
+    ]
+  },
+  {
+    "name": "tomcat_partial_put_scanner",
+    "filename": "tomcat_partial_put_scanner.py",
+    "category": "misc",
+    "path": "misc/tomcat_partial_put_scanner.py",
+    "date": "2026-03-18",
+    "cve": "CVE-2025-24813",
+    "cvss": 9.8,
+    "description": "Scans for Apache Tomcat instances vulnerable to the partial PUT",
+    "targets": [
+      "tomcat"
+    ]
+  },
+  {
+    "name": "nextjs_middleware_bypass",
+    "filename": "nextjs_middleware_bypass.py",
+    "category": "misc",
+    "path": "misc/nextjs_middleware_bypass.py",
+    "date": "2026-03-17",
+    "cve": "CVE-2025-29927",
+    "cvss": 9.1,
+    "description": "Scans for Next.js applications and tests whether they are vulnerable to the",
+    "targets": [
+      "nextjs"
+    ]
+  },
+  {
+    "name": "oauth_phish_hunter",
+    "filename": "oauth_phish_hunter.py",
+    "category": "phishing",
+    "path": "phishing/oauth_phish_hunter.py",
+    "date": "2026-03-10",
+    "cve": null,
+    "cvss": null,
+    "description": "oauth_phish_hunter.py \u2014 Detect OAuth redirection abuse phishing campaigns.",
+    "targets": []
+  },
+  {
+    "name": "json_formatter",
+    "filename": "json_formatter.py",
+    "category": "misc",
+    "path": "misc/json_formatter.py",
+    "date": "2026-03-09",
+    "cve": null,
+    "cvss": null,
+    "description": "Security scanner",
+    "targets": []
+  },
+  {
+    "name": "vmware_aria_cve_2026_22719_scanner",
+    "filename": "vmware_aria_cve_2026_22719_scanner.py",
+    "category": "misc",
+    "path": "misc/vmware_aria_cve_2026_22719_scanner.py",
+    "date": "2026-03-09",
+    "cve": "CVE-2026-22719",
+    "cvss": null,
+    "description": "CVE-2026-22719 \u2014 Command Injection in VMware Aria Operations (Broadcom).",
+    "targets": [
+      "vmware"
+    ]
+  },
+  {
+    "name": "n8n_rce_scanner",
+    "filename": "n8n_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/n8n_rce_scanner.py",
+    "date": "2026-03-07",
+    "cve": "CVE-2025-68613",
+    "cvss": 9.9,
+    "description": "Scans for exposed n8n workflow automation instances and checks whether",
+    "targets": []
+  },
+  {
+    "name": "oauth_redirect_phish_hunter",
+    "filename": "oauth_redirect_phish_hunter.py",
+    "category": "phishing",
+    "path": "phishing/oauth_redirect_phish_hunter.py",
+    "date": "2026-03-07",
+    "cve": null,
+    "cvss": null,
+    "description": "oauth_redirect_phish_hunter.py",
+    "targets": []
+  }
+]

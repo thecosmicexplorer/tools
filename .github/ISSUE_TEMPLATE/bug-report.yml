@@ -1,0 +1,40 @@
+name: 🐛 Bug Report
+description: A tool crashes, produces false positives, or behaves unexpectedly
+title: "[Bug] <tool name>: <short description>"
+labels: ["bug"]
+body:
+  - type: input
+    id: tool
+    attributes:
+      label: Tool
+      placeholder: e.g. rce/jenkins_script_console_rce_scanner.py
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      placeholder: Describe the bug — error message, wrong output, false positive/negative, etc.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce
+      placeholder: |
+        python rce/jenkins_script_console_rce_scanner.py --target http://...
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: e.g. 3.12.2
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
