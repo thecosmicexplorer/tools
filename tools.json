@@ -1,5 +1,16 @@
 [
   {
+    "name": "kibana_ssrf_scanner",
+    "filename": "kibana_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/kibana_ssrf_scanner.py",
+    "date": "2026-05-03",
+    "cve": "CVE-2021-22137",
+    "cvss": null,
+    "description": "Scanner for detecting SSRF vulnerabilities in Kibana APIs.",
+    "targets": []
+  },
+  {
     "name": "caddy_directory_traversal_scanner",
     "filename": "caddy_directory_traversal_scanner.py",
     "category": "path-traversal",
