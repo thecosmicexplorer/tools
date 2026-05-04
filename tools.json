@@ -1,5 +1,18 @@
 [
   {
+    "name": "gitlab_ssrf_scanner",
+    "filename": "gitlab_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/gitlab_ssrf_scanner.py",
+    "date": "2026-05-04",
+    "cve": "CVE-2025-12345",
+    "cvss": 9.6,
+    "description": "GitLab API v4 Server-Side Request Forgery (SSRF) Scanner",
+    "targets": [
+      "gitlab"
+    ]
+  },
+  {
     "name": "kibana_ssrf_scanner",
     "filename": "kibana_ssrf_scanner.py",
     "category": "ssrf",

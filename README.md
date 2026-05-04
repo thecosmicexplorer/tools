@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-04 | [gitlab_ssrf_scanner.py](ssrf/gitlab_ssrf_scanner.py) | CVE-2025-12345 (CVSS 9.6) | ssrf | GitLab API v4 Server-Side Request Forgery (SSRF) Scanner |
 | 2026-05-03 | [kibana_ssrf_scanner.py](ssrf/kibana_ssrf_scanner.py) | CVE-2021-22137 | ssrf | Scanner for detecting SSRF vulnerabilities in Kibana APIs. |
 | 2026-05-02 | [caddy_directory_traversal_scanner.py](path-traversal/caddy_directory_traversal_scanner.py) | CVE-2025-4923 (CVSS 9.1) | 🟣 Path Traversal | This script scans Caddy web servers for a directory traversal vulnerability |
 | 2026-05-01 | [jenkins_config_exposure_scanner.py](info-leak/jenkins_config_exposure_scanner.py) | CVE-2021-21650 | 🟠 Info Leak | This scanner detects instances of Jenkins exposed to the internet, checks for insecure c |
