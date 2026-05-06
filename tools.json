@@ -1,5 +1,18 @@
 [
   {
+    "name": "nexus_rce_cve_2026_54321_scanner",
+    "filename": "nexus_rce_cve_2026_54321_scanner.py",
+    "category": "rce",
+    "path": "rce/nexus_rce_cve_2026_54321_scanner.py",
+    "date": "2026-05-06",
+    "cve": "CVE-2026-54321",
+    "cvss": 9.8,
+    "description": "Remote Code Execution (RCE) scanner for Nexus Repository Manager vulnerability (CVE-2026-54321).",
+    "targets": [
+      "nexus"
+    ]
+  },
+  {
     "name": "jenkins_user_enum_scanner",
     "filename": "jenkins_user_enum_scanner.py",
     "category": "misc",
