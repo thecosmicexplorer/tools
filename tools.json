@@ -1,5 +1,18 @@
 [
   {
+    "name": "jenkins_pipeline_rce_scanner",
+    "filename": "jenkins_pipeline_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/jenkins_pipeline_rce_scanner.py",
+    "date": "2026-05-07",
+    "cve": null,
+    "cvss": null,
+    "description": "An async scanner for detecting and exploiting remote code execution (RCE) vulnerabilities in Jenkins scripted pipelines.",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
     "name": "nexus_rce_cve_2026_54321_scanner",
     "filename": "nexus_rce_cve_2026_54321_scanner.py",
     "category": "rce",
