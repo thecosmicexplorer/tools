@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-08 | [gitlab_runner_rce_scanner.py](rce/gitlab_runner_rce_scanner.py) | CVE-2021-22205 (CVSS 10.0) | rce | GitLab Runner RCE vulnerability scanner (Improper validation of image files). |
 | 2026-05-07 | [jenkins_pipeline_rce_scanner.py](rce/jenkins_pipeline_rce_scanner.py) | — | rce | An async scanner for detecting and exploiting remote code execution (RCE) vulnerabilities in Jenkins scripted pipelines. |
 | 2026-05-06 | [nexus_rce_cve_2026_54321_scanner.py](rce/nexus_rce_cve_2026_54321_scanner.py) | CVE-2026-54321 (CVSS 9.8) | rce | Remote Code Execution (RCE) scanner for Nexus Repository Manager vulnerability (CVE-2026-54321). |
 | 2026-05-05 | [jenkins_user_enum_scanner.py](misc/jenkins_user_enum_scanner.py) | CVE-2018-1000110 | misc | Scanner for username enumeration vulnerabilities in Jenkins endpoints. |
