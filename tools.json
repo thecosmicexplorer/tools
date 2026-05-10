@@ -1,5 +1,18 @@
 [
   {
+    "name": "grafana_auth_bypass_scanner",
+    "filename": "grafana_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/grafana_auth_bypass_scanner.py",
+    "date": "2026-05-10",
+    "cve": "CVE-2021-43798",
+    "cvss": null,
+    "description": "Scanner for authentication bypass vulnerabilities in Grafana instances.",
+    "targets": [
+      "grafana"
+    ]
+  },
+  {
     "name": "hashicorp_consul_acl_bypass_scanner",
     "filename": "hashicorp_consul_acl_bypass_scanner.py",
     "category": "misc",

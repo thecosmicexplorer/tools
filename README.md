@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-10 | [grafana_auth_bypass_scanner.py](auth-bypass/grafana_auth_bypass_scanner.py) | CVE-2021-43798 | auth-bypass | Scanner for authentication bypass vulnerabilities in Grafana instances. |
 | 2026-05-09 | [hashicorp_consul_acl_bypass_scanner.py](misc/hashicorp_consul_acl_bypass_scanner.py) | CVE-2025-12367 | misc | Detects HashiCorp Consul ACL bypass and unauthorized access vulnerability. |
 | 2026-05-08 | [gitlab_runner_rce_scanner.py](rce/gitlab_runner_rce_scanner.py) | CVE-2021-22205 (CVSS 10.0) | rce | GitLab Runner RCE vulnerability scanner (Improper validation of image files). |
 | 2026-05-07 | [jenkins_pipeline_rce_scanner.py](rce/jenkins_pipeline_rce_scanner.py) | — | rce | An async scanner for detecting and exploiting remote code execution (RCE) vulnerabilities in Jenkins scripted pipelines. |
