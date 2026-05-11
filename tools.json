@@ -1,5 +1,18 @@
 [
   {
+    "name": "harbor_ssrf_scanner",
+    "filename": "harbor_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/harbor_ssrf_scanner.py",
+    "date": "2026-05-11",
+    "cve": null,
+    "cvss": null,
+    "description": "Scanner for detecting Server-Side Request Forgery (SSRF) vulnerabilities in VMware Harbor Registry API.",
+    "targets": [
+      "harbor"
+    ]
+  },
+  {
     "name": "grafana_auth_bypass_scanner",
     "filename": "grafana_auth_bypass_scanner.py",
     "category": "auth-bypass",

