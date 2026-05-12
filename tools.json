@@ -1,5 +1,18 @@
 [
   {
+    "name": "terraform_sensitive_variable_leak_scanner",
+    "filename": "terraform_sensitive_variable_leak_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/terraform_sensitive_variable_leak_scanner.py",
+    "date": "2026-05-12",
+    "cve": null,
+    "cvss": null,
+    "description": "Scanner to detect sensitive variable leakage in Terraform state files.",
+    "targets": [
+      "terraform"
+    ]
+  },
+  {
     "name": "harbor_ssrf_scanner",
     "filename": "harbor_ssrf_scanner.py",
     "category": "ssrf",
