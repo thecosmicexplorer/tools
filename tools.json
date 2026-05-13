@@ -1,5 +1,16 @@
 [
   {
+    "name": "apache_airflow_rce_scanner",
+    "filename": "apache_airflow_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/apache_airflow_rce_scanner.py",
+    "date": "2026-05-13",
+    "cve": "CVE-2026-44578",
+    "cvss": 9.8,
+    "description": "Scanner for RCE in Apache Airflow Webserver API exposed due to weak default auth.",
+    "targets": []
+  },
+  {
     "name": "terraform_sensitive_variable_leak_scanner",
     "filename": "terraform_sensitive_variable_leak_scanner.py",
     "category": "info-leak",
