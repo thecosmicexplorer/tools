@@ -1,5 +1,16 @@
 [
   {
+    "name": "drone_ci_rce_scanner",
+    "filename": "drone_ci_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/drone_ci_rce_scanner.py",
+    "date": "2026-05-14",
+    "cve": "CVE-2026-12345",
+    "cvss": null,
+    "description": "Remote Code Execution (RCE) scanner for Drone CI default token vulnerability.",
+    "targets": []
+  },
+  {
     "name": "apache_airflow_rce_scanner",
     "filename": "apache_airflow_rce_scanner.py",
     "category": "rce",

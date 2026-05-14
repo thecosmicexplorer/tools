@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-14 | [drone_ci_rce_scanner.py](rce/drone_ci_rce_scanner.py) | CVE-2026-12345 | rce | Remote Code Execution (RCE) scanner for Drone CI default token vulnerability. |
 | 2026-05-13 | [apache_airflow_rce_scanner.py](rce/apache_airflow_rce_scanner.py) | CVE-2026-44578 (CVSS 9.8) | rce | Scanner for RCE in Apache Airflow Webserver API exposed due to weak default auth. |
 | 2026-05-12 | [terraform_sensitive_variable_leak_scanner.py](info-leak/terraform_sensitive_variable_leak_scanner.py) | — | info-leak | Scanner to detect sensitive variable leakage in Terraform state files. |
 | 2026-05-10 | [grafana_auth_bypass_scanner.py](auth-bypass/grafana_auth_bypass_scanner.py) | CVE-2021-43798 | auth-bypass | Scanner for authentication bypass vulnerabilities in Grafana instances. |
