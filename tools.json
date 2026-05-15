@@ -1,5 +1,18 @@
 [
   {
+    "name": "vault_kv_v2_path_traversal_scanner",
+    "filename": "vault_kv_v2_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/vault_kv_v2_path_traversal_scanner.py",
+    "date": "2026-05-15",
+    "cve": null,
+    "cvss": 9.6,
+    "description": "A scanner for HashiCorp Vault KV v2 Path Traversal Vulnerability, allowing unauthorized access to secrets.",
+    "targets": [
+      "vault"
+    ]
+  },
+  {
     "name": "drone_ci_rce_scanner",
     "filename": "drone_ci_rce_scanner.py",
     "category": "rce",
