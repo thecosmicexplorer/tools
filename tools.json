@@ -1,5 +1,16 @@
 [
   {
+    "name": "apache_httpd_path_traversal_scanner",
+    "filename": "apache_httpd_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/apache_httpd_path_traversal_scanner.py",
+    "date": "2026-05-16",
+    "cve": "CVE-2024-20145",
+    "cvss": null,
+    "description": "Scanner for path traversal vulnerability in Apache HTTP Server affecting mod_proxy dos.",
+    "targets": []
+  },
+  {
     "name": "vault_kv_v2_path_traversal_scanner",
     "filename": "vault_kv_v2_path_traversal_scanner.py",
     "category": "path-traversal",

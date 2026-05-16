@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-16 | [apache_httpd_path_traversal_scanner.py](path-traversal/apache_httpd_path_traversal_scanner.py) | CVE-2024-20145 | path-traversal | Scanner for path traversal vulnerability in Apache HTTP Server affecting mod_proxy dos. |
 | 2026-05-15 | [vault_kv_v2_path_traversal_scanner.py](path-traversal/vault_kv_v2_path_traversal_scanner.py) | — | path-traversal | A scanner for HashiCorp Vault KV v2 Path Traversal Vulnerability, allowing unauthorized access to secrets. |
 | 2026-05-14 | [drone_ci_rce_scanner.py](rce/drone_ci_rce_scanner.py) | CVE-2026-12345 | rce | Remote Code Execution (RCE) scanner for Drone CI default token vulnerability. |
 | 2026-05-13 | [apache_airflow_rce_scanner.py](rce/apache_airflow_rce_scanner.py) | CVE-2026-44578 (CVSS 9.8) | rce | Scanner for RCE in Apache Airflow Webserver API exposed due to weak default auth. |
