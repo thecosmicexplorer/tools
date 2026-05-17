@@ -1,5 +1,18 @@
 [
   {
+    "name": "argocd_repo_path_traversal_scanner",
+    "filename": "argocd_repo_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/argocd_repo_path_traversal_scanner.py",
+    "date": "2026-05-17",
+    "cve": null,
+    "cvss": null,
+    "description": "Argo CD Repository Path Traversal Vulnerability Scanner",
+    "targets": [
+      "argocd"
+    ]
+  },
+  {
     "name": "apache_httpd_path_traversal_scanner",
     "filename": "apache_httpd_path_traversal_scanner.py",
     "category": "path-traversal",
