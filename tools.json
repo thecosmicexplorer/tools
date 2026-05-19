@@ -1,5 +1,16 @@
 [
   {
+    "name": "docker_api_rce_scanner",
+    "filename": "docker_api_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/docker_api_rce_scanner.py",
+    "date": "2026-05-19",
+    "cve": "CVE-2020-15257",
+    "cvss": null,
+    "description": "Detects exposed Docker APIs and probes for remote code execution vulnerabilities.",
+    "targets": []
+  },
+  {
     "name": "gitlab_graphql_auth_bypass_scanner",
     "filename": "gitlab_graphql_auth_bypass_scanner.py",
     "category": "auth-bypass",

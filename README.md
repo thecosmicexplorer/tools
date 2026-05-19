@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-19 | [docker_api_rce_scanner.py](rce/docker_api_rce_scanner.py) | CVE-2020-15257 | rce | Detects exposed Docker APIs and probes for remote code execution vulnerabilities. |
 | 2026-05-18 | [gitlab_graphql_auth_bypass_scanner.py](auth-bypass/gitlab_graphql_auth_bypass_scanner.py) | CVE-2025-12345 (CVSS 9.8) | auth-bypass | Scanner for GitLab GraphQL API authentication bypass vulnerability allowing data exfiltration. |
 | 2026-05-17 | [argocd_repo_path_traversal_scanner.py](path-traversal/argocd_repo_path_traversal_scanner.py) | — | path-traversal | Argo CD Repository Path Traversal Vulnerability Scanner |
 | 2026-05-16 | [apache_httpd_path_traversal_scanner.py](path-traversal/apache_httpd_path_traversal_scanner.py) | CVE-2024-20145 | path-traversal | Scanner for path traversal vulnerability in Apache HTTP Server affecting mod_proxy dos. |
