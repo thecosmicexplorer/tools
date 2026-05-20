@@ -1,5 +1,18 @@
 [
   {
+    "name": "jenkins_script_console_rce_scanner",
+    "filename": "jenkins_script_console_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/jenkins_script_console_rce_scanner.py",
+    "date": "2026-05-20",
+    "cve": null,
+    "cvss": null,
+    "description": "Detects and exploits Jenkins Script Console open access for remote code execution (RCE).",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
     "name": "docker_api_rce_scanner",
     "filename": "docker_api_rce_scanner.py",
     "category": "rce",
