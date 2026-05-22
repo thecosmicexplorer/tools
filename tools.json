@@ -1,5 +1,16 @@
 [
   {
+    "name": "nomad_rce_cve_2025_45678_scanner",
+    "filename": "nomad_rce_cve_2025_45678_scanner.py",
+    "category": "rce",
+    "path": "rce/nomad_rce_cve_2025_45678_scanner.py",
+    "date": "2026-05-22",
+    "cve": "CVE-2025-45678",
+    "cvss": 9.8,
+    "description": "Remote code execution scanner for HashiCorp Nomad cluster via unauthenticated job submission flaw.",
+    "targets": []
+  },
+  {
     "name": "argocd_insecure_deserialization_scanner",
     "filename": "argocd_insecure_deserialization_scanner.py",
     "category": "misc",

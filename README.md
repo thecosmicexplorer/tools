@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-22 | [nomad_rce_cve_2025_45678_scanner.py](rce/nomad_rce_cve_2025_45678_scanner.py) | CVE-2025-45678 (CVSS 9.8) | rce | Remote code execution scanner for HashiCorp Nomad cluster via unauthenticated job submission flaw. |
 | 2026-05-21 | [argocd_insecure_deserialization_scanner.py](misc/argocd_insecure_deserialization_scanner.py) | CVE-2026-71345 | misc | Scans for insecure deserialization vulnerabilities in ArgoCD via malicious Helm chart inputs. |
 | 2026-05-19 | [docker_api_rce_scanner.py](rce/docker_api_rce_scanner.py) | CVE-2020-15257 | rce | Detects exposed Docker APIs and probes for remote code execution vulnerabilities. |
 | 2026-05-18 | [gitlab_graphql_auth_bypass_scanner.py](auth-bypass/gitlab_graphql_auth_bypass_scanner.py) | CVE-2025-12345 (CVSS 9.8) | auth-bypass | Scanner for GitLab GraphQL API authentication bypass vulnerability allowing data exfiltration. |
