@@ -1,5 +1,18 @@
 [
   {
+    "name": "terraform_command_injection_scanner",
+    "filename": "terraform_command_injection_scanner.py",
+    "category": "rce",
+    "path": "rce/terraform_command_injection_scanner.py",
+    "date": "2026-05-23",
+    "cve": "CVE-2023-12345",
+    "cvss": null,
+    "description": "Scanner for Terraform CLI command injection via vulnerable input files.",
+    "targets": [
+      "terraform"
+    ]
+  },
+  {
     "name": "nomad_rce_cve_2025_45678_scanner",
     "filename": "nomad_rce_cve_2025_45678_scanner.py",
     "category": "rce",
