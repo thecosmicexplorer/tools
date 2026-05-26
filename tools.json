@@ -1,5 +1,18 @@
 [
   {
+    "name": "django_insecure_deserialization_scanner",
+    "filename": "django_insecure_deserialization_scanner.py",
+    "category": "misc",
+    "path": "misc/django_insecure_deserialization_scanner.py",
+    "date": "2026-05-26",
+    "cve": null,
+    "cvss": null,
+    "description": "Detects and actively probes for insecure deserialization vulnerabilities in Django applications.",
+    "targets": [
+      "django"
+    ]
+  },
+  {
     "name": "jenkins_credential_exposure_scanner",
     "filename": "jenkins_credential_exposure_scanner.py",
     "category": "info-leak",
