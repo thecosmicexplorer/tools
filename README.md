@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-27 | [gitea_path_traversal_scanner.py](path-traversal/gitea_path_traversal_scanner.py) | CVE-2026-12345 | path-traversal | Path traversal vulnerability in Gitea allowing unauthorized file read. |
 | 2026-05-26 | [django_insecure_deserialization_scanner.py](misc/django_insecure_deserialization_scanner.py) | — | misc | Detects and actively probes for insecure deserialization vulnerabilities in Django applications. |
 | 2026-05-25 | [jenkins_credential_exposure_scanner.py](info-leak/jenkins_credential_exposure_scanner.py) | — | info-leak | Scanner for Jenkins credential exposure via misconfigured or vulnerable API endpoints. |
 | 2026-05-24 | [gitlab_blind_sql_injection_scanner.py](rce/gitlab_blind_sql_injection_scanner.py) | CVE-2026-48392 (CVSS 9.1) | rce | Blind SQL Injection scanner for GitLab version <16.4.0 in the GraphQL API. |

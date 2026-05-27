@@ -1,5 +1,16 @@
 [
   {
+    "name": "gitea_path_traversal_scanner",
+    "filename": "gitea_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/gitea_path_traversal_scanner.py",
+    "date": "2026-05-27",
+    "cve": "CVE-2026-12345",
+    "cvss": null,
+    "description": "Path traversal vulnerability in Gitea allowing unauthorized file read.",
+    "targets": []
+  },
+  {
     "name": "django_insecure_deserialization_scanner",
     "filename": "django_insecure_deserialization_scanner.py",
     "category": "misc",
