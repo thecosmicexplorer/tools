@@ -1,5 +1,19 @@
 [
   {
+    "name": "terraform_aws_keys_exposure_scanner",
+    "filename": "terraform_aws_keys_exposure_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/terraform_aws_keys_exposure_scanner.py",
+    "date": "2026-05-28",
+    "cve": null,
+    "cvss": null,
+    "description": "Detects exposed AWS access keys and secret keys in Terraform state files.",
+    "targets": [
+      "terraform",
+      "aws"
+    ]
+  },
+  {
     "name": "gitea_path_traversal_scanner",
     "filename": "gitea_path_traversal_scanner.py",
     "category": "path-traversal",
