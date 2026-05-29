@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-05-29 | [jenkins_unauth_config_download_scanner.py](auth-bypass/jenkins_unauth_config_download_scanner.py) | — | auth-bypass | Scanner for unauthorized configuration file download vulnerabilities in Jenkins. |
 | 2026-05-28 | [terraform_aws_keys_exposure_scanner.py](info-leak/terraform_aws_keys_exposure_scanner.py) | — | info-leak | Detects exposed AWS access keys and secret keys in Terraform state files. |
 | 2026-05-27 | [gitea_path_traversal_scanner.py](path-traversal/gitea_path_traversal_scanner.py) | CVE-2026-12345 | path-traversal | Path traversal vulnerability in Gitea allowing unauthorized file read. |
 | 2026-05-26 | [django_insecure_deserialization_scanner.py](misc/django_insecure_deserialization_scanner.py) | — | misc | Detects and actively probes for insecure deserialization vulnerabilities in Django applications. |

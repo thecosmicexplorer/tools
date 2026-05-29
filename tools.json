@@ -1,5 +1,18 @@
 [
   {
+    "name": "jenkins_unauth_config_download_scanner",
+    "filename": "jenkins_unauth_config_download_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/jenkins_unauth_config_download_scanner.py",
+    "date": "2026-05-29",
+    "cve": null,
+    "cvss": null,
+    "description": "Scanner for unauthorized configuration file download vulnerabilities in Jenkins.",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
     "name": "terraform_aws_keys_exposure_scanner",
     "filename": "terraform_aws_keys_exposure_scanner.py",
     "category": "info-leak",
