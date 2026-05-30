@@ -1,5 +1,16 @@
 [
   {
+    "name": "active_directory_ssrf_scanner",
+    "filename": "active_directory_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/active_directory_ssrf_scanner.py",
+    "date": "2026-05-30",
+    "cve": null,
+    "cvss": null,
+    "description": "Active Directory Federation Services (AD FS) SSRF vulnerability scanner targeting misconfigured endpoints.",
+    "targets": []
+  },
+  {
     "name": "jenkins_unauth_config_download_scanner",
     "filename": "jenkins_unauth_config_download_scanner.py",
     "category": "auth-bypass",
