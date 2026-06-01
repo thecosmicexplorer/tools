@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-01 | [grafana_ssrf_scanner.py](ssrf/grafana_ssrf_scanner.py) | CVE-2021-43798 | ssrf | Scanner for detecting and exploiting SSRF vulnerabilities in Grafana. |
 | 2026-05-30 | [active_directory_ssrf_scanner.py](ssrf/active_directory_ssrf_scanner.py) | — | ssrf | Active Directory Federation Services (AD FS) SSRF vulnerability scanner targeting misconfigured endpoints. |
 | 2026-05-29 | [jenkins_unauth_config_download_scanner.py](auth-bypass/jenkins_unauth_config_download_scanner.py) | — | auth-bypass | Scanner for unauthorized configuration file download vulnerabilities in Jenkins. |
 | 2026-05-28 | [terraform_aws_keys_exposure_scanner.py](info-leak/terraform_aws_keys_exposure_scanner.py) | — | info-leak | Detects exposed AWS access keys and secret keys in Terraform state files. |

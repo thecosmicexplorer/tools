@@ -1,5 +1,18 @@
 [
   {
+    "name": "grafana_ssrf_scanner",
+    "filename": "grafana_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/grafana_ssrf_scanner.py",
+    "date": "2026-06-01",
+    "cve": "CVE-2021-43798",
+    "cvss": null,
+    "description": "Scanner for detecting and exploiting SSRF vulnerabilities in Grafana.",
+    "targets": [
+      "grafana"
+    ]
+  },
+  {
     "name": "jenkins_credential_exposure_scanner",
     "filename": "jenkins_credential_exposure_scanner.py",
     "category": "info-leak",
