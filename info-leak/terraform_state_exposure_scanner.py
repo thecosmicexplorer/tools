@@ -2,185 +2,199 @@
 """
 Terraform State Exposure Scanner
 ================================
-Scans for publicly accessible Terraform state files, which may leak sensitive
-data such as cloud credentials, secrets, API keys, and infrastructure details.
+This tool scans for publicly exposed Terraform state files, which frequently contain sensitive
+information such as access keys, secret keys, access tokens, and other credentials.
 
-Risks of exposed Terraform state files:
-  - Plaintext secrets like AWS access keys
-  - Resource provider credentials
-  - Names of sensitive resources and configurations
-  - Service endpoints that could lead to further attacks
+Sensitive data exposed in Terraform state files is a significant security risk, as it can be used
+by attackers to gain unauthorized access to cloud resources or further exploit a system.
 
-This tool identifies public Terraform state files on endpoints and cloud storage
-buckets, parses them for sensitive keys, and highlights leaked information.
+Features:
+  - Detects publicly accessible Terraform state files by looking for expected paths and verifying their availability.
+  - Identifies sensitive information in the exposed Terraform state, such as AWS credentials or sensitive variables.
+  - Supports active probing to extract and analyze JSON content in Terraform state files.
+  - Safe mode for detection-only scans (no active sensitive data inspection).
+
+Potential Risks:
+  - Exposed state files often contain sensitive data such as:
+      - Provider credentials (e.g., AWS secret keys)
+      - SSH keys
+      - Other sensitive variables
 
 Usage:
-  # Scan a single target URL
-  python terraform_state_exposure_scanner.py --target https://example.com/terraform.tfstate
+  # Scan a single URL for an exposed Terraform state file
+  python terraform_state_exposure_scanner.py --target https://example.com
 
-  # Scan multiple targets from a file
-  python terraform_state_exposure_scanner.py --list urls.txt --output findings.json
+  # Scan a list of URLs from a file
+  python terraform_state_exposure_scanner.py --list urls.txt --output exposed_results.json
 
-  # Safe mode — identifies exposed state files without parsing
-  python terraform_state_exposure_scanner.py --safe --list urls.txt
+  # Safe mode — detection only, without analyzing sensitive data in the exposed state file
+  python terraform_state_exposure_scanner.py --list urls.txt --safe
 
 References:
   - https://www.terraform.io/docs/state/index.html
   - https://www.hashicorp.com/security
 """
 
-import argparse
 import asyncio
+import argparse
 import json
 import re
-from urllib.parse import urljoin
+from urllib.parse import urlparse
 
 import httpx
-from colorama import Fore, Style
 
-# ── Detection and Parsing Rules ───────────────────────────────────────────────
+# ── Constants ────────────────────────────────────────────────────────────────
 
-TERRAFORM_STATE_INDICATORS = ['"version"', '"terraform_version"', '"resources"', '"outputs"']
-
-# Keys typically found in Terraform state data that may contain sensitive info
-SENSITIVE_KEYS = [
-    "access_key", "secret_key", "token", "password", "username", "private_key", 
-    "key_material", "client_secret", "api_key", "auth_token"
+STATE_FILE_PATHS = [
+    "/terraform.tfstate",
+    "/.terraform/terraform.tfstate",
+    "/.tfstate",
+    "/state/terraform.tfstate",
 ]
 
-REQUEST_TIMEOUT = 8
+SENSITIVE_KEY_PATTERNS = [
+    r'"access_key_id"\s*:\s*"(.*?)"',
+    r'"secret_access_key"\s*:\s*"(.*?)"',
+    r'"client_secret"\s*:\s*"(.*?)"',
+    r'"password"\s*:\s*"(.*?)"',
+    r'"private_key"\s*:\s*"(.*?)"',
+]
+
 SEMAPHORE_LIMIT = 20
+REQUEST_TIMEOUT = 10
 
+# ANSI color codes for CLI output
+COLORS = {
+    "CRITICAL": "\033[31m",  # Red
+    "HIGH": "\033[33m",      # Yellow
+    "INFO": "\033[32m",      # Green
+    "RESET": "\033[0m",      # Reset
+}
 
-# ── Helper Functions ──────────────────────────────────────────────────────────
+# ── Helpers ──────────────────────────────────────────────────────────────────
 
 def normalize_url(url: str) -> str:
-    """Ensure the URL has the appropriate protocol and no trailing slash."""
+    """Ensure URL starts with http/https and remove trailing slashes."""
     if not url.startswith(("http://", "https://")):
         url = "https://" + url
     return url.rstrip("/")
 
 
-def extract_sensitive_data_from_tfstate(content: str):
-    """Extract sensitive keys and values from a Terraform state file."""
-    findings = {}
+def print_status(message: str, level: str = "INFO"):
+    """Prints a message to the console with color coding."""
+    print(f"{COLORS.get(level, '')}[{level}] {message}{COLORS['RESET']}")
+
+
+async def fetch_url(client: httpx.AsyncClient, url: str):
+    """Fetch the content of a URL with a timeout."""
     try:
-        parsed = json.loads(content)
-        flat_items = {}
-
-        # Flatten to handle potential nested key structures
-        def flatten(data, prefix=""):
-            if isinstance(data, dict):
-                for key, value in data.items():
-                    full_key = f"{prefix}.{key}" if prefix else key
-                    flat_items[full_key] = value
-                    flatten(value, full_key)
-            elif isinstance(data, list):
-                for i, item in enumerate(data):
-                    item_key = f"{prefix}.{i}" if prefix else str(i)
-                    flatten(item, item_key)
-
-        flatten(parsed)
-
-        # Extract sensitive keys
-        for key, value in flat_items.items():
-            lowered_key = key.lower()
-            if any(sensitive_key in lowered_key for sensitive_key in SENSITIVE_KEYS):
-                findings[key] = value
-    except json.JSONDecodeError:
+        response = await client.get(url, timeout=REQUEST_TIMEOUT)
+        return response
+    except httpx.RequestError as e:
+        print_status(f"Error fetching {url}: {e}", "HIGH")
         return None
-    return findings
 
 
-# ── Scanner Logic ─────────────────────────────────────────────────────────────
+def extract_sensitive_data(content: str):
+    """Search for sensitive information patterns in content."""
+    extracted_data = []
+    for pattern in SENSITIVE_KEY_PATTERNS:
+        matches = re.findall(pattern, content)
+        if matches:
+            extracted_data.extend(matches)
+    return extracted_data
 
-async def check_terraform_state(client: httpx.AsyncClient, url: str, safe_mode: bool, semaphore: asyncio.Semaphore):
-    """Checks if a URL exposes a Terraform state file."""
+
+async def check_state_file(client: httpx.AsyncClient, base_url: str, path: str, semaphore: asyncio.Semaphore, safe_mode: bool):
+    """
+    Check a potential Terraform state file at a specific path.
+    If found, optionally analyze its content for sensitive data.
+    """
     async with semaphore:
-        try:
-            response = await client.get(url, timeout=REQUEST_TIMEOUT)
-        except (httpx.RequestError, httpx.HTTPStatusError) as e:
-            return None, f"Request failed ({str(e)})"
+        url = base_url + path
+        response = await fetch_url(client, url)
+        if response and response.status_code == 200 and response.headers.get("Content-Type", "").startswith("application/json"):
+            content = response.text
+            sensitive_data = []
 
-        if response.status_code == 200 and any(indicator in response.text for indicator in TERRAFORM_STATE_INDICATORS):
-            if safe_mode:
-                return {"url": url, "status": "exposed", "sensitive_data": None}, None
-            else:
-                sensitive_data = extract_sensitive_data_from_tfstate(response.text)
-                if sensitive_data:
-                    return {"url": url, "status": "leaks sensitive data", "sensitive_data": sensitive_data}, None
-                return {"url": url, "status": "exposed", "sensitive_data": None}, None
-        return None, "Not a Terraform state file or not accessible"
+            if not safe_mode:
+                sensitive_data = extract_sensitive_data(content)
 
+            return {
+                "path": path,
+                "url": url,
+                "status": "exposed",
+                "sensitive_data": sensitive_data or None,
+            }
 
-async def scan_targets(urls, safe_mode, concurrency, no_verify):
-    """Scans a list of targets for Terraform state file exposure."""
-    results = []
-    semaphore = asyncio.Semaphore(concurrency)
-
-    async with httpx.AsyncClient(verify=(not no_verify)) as client:
-        tasks = [check_terraform_state(client, normalize_url(url), safe_mode, semaphore) for url in urls]
-        for task in asyncio.as_completed(tasks):
-            result, error = await task
-            if result:
-                results.append(result)
-                print(
-                    f"{Fore.RED if 'sensitive_data' in result and result['sensitive_data'] else Fore.YELLOW}"
-                    f"{result['url']} - {result['status']}{Style.RESET_ALL}"
-                )
-            elif error:
-                print(f"{Fore.YELLOW}{error}{Style.RESET_ALL}")
-    return results
+        return {"path": path, "url": url, "status": "not_exposed"}
 
 
-# ── Command-Line Interface ────────────────────────────────────────────────────
+# ── Core scanner ────────────────────────────────────────────────────────────
 
-def parse_arguments():
-    """Parses command-line arguments."""
-    parser = argparse.ArgumentParser(description="Terraform State Exposure Scanner")
-    parser.add_argument("--target", type=str, help="Single URL to scan")
-    parser.add_argument("--list", type=str, help="File containing a list of URLs to scan")
-    parser.add_argument("--output", type=str, help="File to save scan results as JSON")
-    parser.add_argument("--safe", action="store_true", help="Safe mode (no sensitive data parsing)")
-    parser.add_argument("--concurrency", type=int, default=20, help="Number of concurrent requests")
-    parser.add_argument("--no-verify", action="store_true", help="Disable SSL certificate verification")
-    return parser.parse_args()
+async def scan_target(target: str, safe_mode: bool, semaphore: asyncio.Semaphore):
+    """
+    Scan a single target for exposed Terraform state files.
+    """
+    base_url = normalize_url(target)
+    result = {"target": base_url, "exposed_files": []}
+
+    print_status(f"Scanning {base_url}...", "INFO")
+
+    async with httpx.AsyncClient(verify=False) as client:
+        tasks = [
+            check_state_file(client, base_url, path, semaphore, safe_mode)
+            for path in STATE_FILE_PATHS
+        ]
+        responses = await asyncio.gather(*tasks)
+        for response in responses:
+            if response and response["status"] == "exposed":
+                result["exposed_files"].append(response)
+
+    if result["exposed_files"]:
+        print_status(f"Exposed state file(s) found for {base_url}!", "CRITICAL")
+    else:
+        print_status(f"No exposed state files found for {base_url}.", "INFO")
+
+    return result
 
 
-async def main():
-    args = parse_arguments()
+async def main(args):
+    """Main asynchronous entry point for the scanner."""
+    semaphore = asyncio.Semaphore(args.concurrency)
+    targets = []
 
-    # Validate input
-    if not args.target and not args.list:
-        print(f"{Fore.RED}Error: You must provide a --target or --list of targets.{Style.RESET_ALL}")
-        sys.exit(1)
-
-    # Gather URLs to scan
-    urls = []
+    # Load targets from single URL or file
     if args.target:
-        urls.append(args.target)
-    if args.list:
-        try:
-            with open(args.list, 'r') as f:
-                urls.extend([line.strip() for line in f if line.strip()])
-        except FileNotFoundError:
-            print(f"{Fore.RED}Error: File not found - {args.list}{Style.RESET_ALL}")
-            sys.exit(1)
+        targets = [args.target]
+    elif args.list:
+        with open(args.list, "r") as f:
+            targets = [line.strip() for line in f if line.strip()]
 
-    # Scan targets
-    print(f"{Fore.CYAN}Starting scan of {len(urls)} target(s)...{Style.RESET_ALL}")
-    results = await scan_targets(urls, args.safe, args.concurrency, args.no_verify)
+    results = []
+    tasks = [scan_target(target, args.safe, semaphore) for target in targets]
+    results = await asyncio.gather(*tasks)
 
-    # Output results
+    # Write results to output file
     if args.output:
-        with open(args.output, 'w') as f:
-            json.dump(results, f, indent=2)
-        print(f"{Fore.GREEN}Results saved to {args.output}{Style.RESET_ALL}")
+        with open(args.output, "w") as f:
+            json.dump(results, f, indent=4)
+            print_status(f"Results saved to {args.output}", "INFO")
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print(f"\n{Fore.RED}Scan interrupted by user{Style.RESET_ALL}")
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Terraform State Exposure Scanner")
+    parser.add_argument("--target", type=str, help="Single target URL to scan")
+    parser.add_argument("--list", type=str, help="Path to file containing a list of URLs to scan")
+    parser.add_argument("--output", type=str, help="Save output to JSON file")
+    parser.add_argument("--safe", action="store_true", help="Detection-only mode (no sensitive data analysis)")
+    parser.add_argument("--concurrency", type=int, default=10, help="Number of concurrent requests (default: 10)")
+    parser.add_argument("--no-verify", action="store_true", help="Disable SSL verification")
+    args = parser.parse_args()
+
+    # Disable SSL verification globally if --no-verify is set
+    if args.no_verify:
+        import httpx._config
+        httpx._config.DEFAULT_CA_BUNDLE_PATH = None
+
+    asyncio.run(main(args))

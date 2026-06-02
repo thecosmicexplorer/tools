@@ -1,5 +1,18 @@
 [
   {
+    "name": "terraform_state_exposure_scanner",
+    "filename": "terraform_state_exposure_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/terraform_state_exposure_scanner.py",
+    "date": "2026-06-02",
+    "cve": null,
+    "cvss": null,
+    "description": "Detects and assesses the security of publicly accessible Terraform state files that may expose sensitive data such as AWS credentials.",
+    "targets": [
+      "terraform"
+    ]
+  },
+  {
     "name": "grafana_ssrf_scanner",
     "filename": "grafana_ssrf_scanner.py",
     "category": "ssrf",
