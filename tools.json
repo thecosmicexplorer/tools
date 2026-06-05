@@ -1,5 +1,16 @@
 [
   {
+    "name": "api_gateway_ssrf_scanner",
+    "filename": "api_gateway_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/api_gateway_ssrf_scanner.py",
+    "date": "2026-06-05",
+    "cve": null,
+    "cvss": null,
+    "description": "A scanner for detecting and probing SSRF vulnerabilities in popular API gateway services.",
+    "targets": []
+  },
+  {
     "name": "django_sql_injection_scanner",
     "filename": "django_sql_injection_scanner.py",
     "category": "rce",
