@@ -1,5 +1,16 @@
 [
   {
+    "name": "spring_boot_actuator_rce_scanner",
+    "filename": "spring_boot_actuator_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/spring_boot_actuator_rce_scanner.py",
+    "date": "2026-06-06",
+    "cve": null,
+    "cvss": null,
+    "description": "Scanner for detecting and exploiting insecure Spring Boot Actuator endpoints leading to potential Remote Code Execution (RCE).",
+    "targets": []
+  },
+  {
     "name": "api_gateway_ssrf_scanner",
     "filename": "api_gateway_ssrf_scanner.py",
     "category": "ssrf",
