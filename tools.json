@@ -1,5 +1,18 @@
 [
   {
+    "name": "keycloak_admin_console_auth_bypass_scanner",
+    "filename": "keycloak_admin_console_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/keycloak_admin_console_auth_bypass_scanner.py",
+    "date": "2026-06-07",
+    "cve": "CVE-2026-12456",
+    "cvss": null,
+    "description": "Keycloak Admin Console weak password default configuration authentication bypass scanner.",
+    "targets": [
+      "keycloak"
+    ]
+  },
+  {
     "name": "spring_boot_actuator_rce_scanner",
     "filename": "spring_boot_actuator_rce_scanner.py",
     "category": "rce",
