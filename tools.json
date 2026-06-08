@@ -1,5 +1,18 @@
 [
   {
+    "name": "jenkins_pipeline_env_injection_scanner",
+    "filename": "jenkins_pipeline_env_injection_scanner.py",
+    "category": "rce",
+    "path": "rce/jenkins_pipeline_env_injection_scanner.py",
+    "date": "2026-06-08",
+    "cve": null,
+    "cvss": null,
+    "description": "Detects and exploits environment variable injection vulnerabilities in Jenkins Pipeline configurations.",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
     "name": "keycloak_admin_console_auth_bypass_scanner",
     "filename": "keycloak_admin_console_auth_bypass_scanner.py",
     "category": "auth-bypass",

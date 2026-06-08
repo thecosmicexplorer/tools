@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-08 | [jenkins_pipeline_env_injection_scanner.py](rce/jenkins_pipeline_env_injection_scanner.py) | — | rce | Detects and exploits environment variable injection vulnerabilities in Jenkins Pipeline configurations. |
 | 2026-06-07 | [keycloak_admin_console_auth_bypass_scanner.py](auth-bypass/keycloak_admin_console_auth_bypass_scanner.py) | CVE-2026-12456 | auth-bypass | Keycloak Admin Console weak password default configuration authentication bypass scanner. |
 | 2026-06-06 | [spring_boot_actuator_rce_scanner.py](rce/spring_boot_actuator_rce_scanner.py) | — | rce | Scanner for detecting and exploiting insecure Spring Boot Actuator endpoints leading to potential Remote Code Execution (RCE). |
 | 2026-06-04 | [django_sql_injection_scanner.py](rce/django_sql_injection_scanner.py) | — | rce | Scanner to detect and exploit SQL injection vulnerabilities in Django applications with improper query sanitization. |
