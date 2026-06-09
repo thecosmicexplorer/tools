@@ -1,5 +1,16 @@
 [
   {
+    "name": "wordpress_project_management_rce_scanner",
+    "filename": "wordpress_project_management_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/wordpress_project_management_rce_scanner.py",
+    "date": "2026-06-09",
+    "cve": "CVE-2026-33124",
+    "cvss": null,
+    "description": "WordPress Project Management Plugin Remote Code Execution (RCE) Scanner",
+    "targets": []
+  },
+  {
     "name": "jenkins_pipeline_env_injection_scanner",
     "filename": "jenkins_pipeline_env_injection_scanner.py",
     "category": "rce",
