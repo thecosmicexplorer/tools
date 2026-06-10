@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-10 | [harbor_registry_auth_bypass_scanner.py](auth-bypass/harbor_registry_auth_bypass_scanner.py) | CVE-2026-56789 (CVSS 9.8) | auth-bypass | Scanner for authentication bypass in Harbor container registry login endpoints. |
 | 2026-06-09 | [wordpress_project_management_rce_scanner.py](rce/wordpress_project_management_rce_scanner.py) | CVE-2026-33124 | rce | WordPress Project Management Plugin Remote Code Execution (RCE) Scanner |
 | 2026-06-08 | [jenkins_pipeline_env_injection_scanner.py](rce/jenkins_pipeline_env_injection_scanner.py) | — | rce | Detects and exploits environment variable injection vulnerabilities in Jenkins Pipeline configurations. |
 | 2026-06-07 | [keycloak_admin_console_auth_bypass_scanner.py](auth-bypass/keycloak_admin_console_auth_bypass_scanner.py) | CVE-2026-12456 | auth-bypass | Keycloak Admin Console weak password default configuration authentication bypass scanner. |

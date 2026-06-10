@@ -1,5 +1,18 @@
 [
   {
+    "name": "harbor_registry_auth_bypass_scanner",
+    "filename": "harbor_registry_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/harbor_registry_auth_bypass_scanner.py",
+    "date": "2026-06-10",
+    "cve": "CVE-2026-56789",
+    "cvss": 9.8,
+    "description": "Scanner for authentication bypass in Harbor container registry login endpoints.",
+    "targets": [
+      "harbor"
+    ]
+  },
+  {
     "name": "wordpress_project_management_rce_scanner",
     "filename": "wordpress_project_management_rce_scanner.py",
     "category": "rce",
