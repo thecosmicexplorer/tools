@@ -1,5 +1,16 @@
 [
   {
+    "name": "azure_devops_ssrf_scanner",
+    "filename": "azure_devops_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/azure_devops_ssrf_scanner.py",
+    "date": "2026-06-11",
+    "cve": null,
+    "cvss": null,
+    "description": "Azure DevOps Server SSRF scanner for detecting outbound HTTP request vulnerabilities.",
+    "targets": []
+  },
+  {
     "name": "harbor_registry_auth_bypass_scanner",
     "filename": "harbor_registry_auth_bypass_scanner.py",
     "category": "auth-bypass",
