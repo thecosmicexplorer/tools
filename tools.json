@@ -1,5 +1,16 @@
 [
   {
+    "name": "gitea_rce_cve_2026_56789_scanner",
+    "filename": "gitea_rce_cve_2026_56789_scanner.py",
+    "category": "rce",
+    "path": "rce/gitea_rce_cve_2026_56789_scanner.py",
+    "date": "2026-06-12",
+    "cve": "CVE-2026-56789",
+    "cvss": 9.8,
+    "description": "Remote Code Execution (RCE) scanner for Gitea instances vulnerable to CVE-2026-56789.",
+    "targets": []
+  },
+  {
     "name": "azure_devops_ssrf_scanner",
     "filename": "azure_devops_ssrf_scanner.py",
     "category": "ssrf",

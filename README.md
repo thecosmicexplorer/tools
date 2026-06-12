@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-12 | [gitea_rce_cve_2026_56789_scanner.py](rce/gitea_rce_cve_2026_56789_scanner.py) | CVE-2026-56789 (CVSS 9.8) | rce | Remote Code Execution (RCE) scanner for Gitea instances vulnerable to CVE-2026-56789. |
 | 2026-06-11 | [azure_devops_ssrf_scanner.py](ssrf/azure_devops_ssrf_scanner.py) | — | ssrf | Azure DevOps Server SSRF scanner for detecting outbound HTTP request vulnerabilities. |
 | 2026-06-10 | [harbor_registry_auth_bypass_scanner.py](auth-bypass/harbor_registry_auth_bypass_scanner.py) | CVE-2026-56789 (CVSS 9.8) | auth-bypass | Scanner for authentication bypass in Harbor container registry login endpoints. |
 | 2026-06-09 | [wordpress_project_management_rce_scanner.py](rce/wordpress_project_management_rce_scanner.py) | CVE-2026-33124 | rce | WordPress Project Management Plugin Remote Code Execution (RCE) Scanner |
