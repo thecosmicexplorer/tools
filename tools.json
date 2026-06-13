@@ -1,5 +1,18 @@
 [
   {
+    "name": "terraform_state_exposure_scanner",
+    "filename": "terraform_state_exposure_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/terraform_state_exposure_scanner.py",
+    "date": "2026-06-13",
+    "cve": "CVE-2021-4193",
+    "cvss": null,
+    "description": "Detects publicly exposed Terraform state files leaking sensitive data such as cloud credentials and API keys.",
+    "targets": [
+      "terraform"
+    ]
+  },
+  {
     "name": "gitea_rce_cve_2026_56789_scanner",
     "filename": "gitea_rce_cve_2026_56789_scanner.py",
     "category": "rce",
