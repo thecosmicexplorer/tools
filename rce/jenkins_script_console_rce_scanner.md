@@ -1,18 +1,23 @@
-# Jenkins Script Console RCE Scanner
+# Jenkins Script Console Remote Code Execution Scanner
 
-## Overview
+This tool scans for Jenkins servers with potential unauthorized access to the "Script Console" feature, a critical vulnerability that could allow remote code execution (RCE). Misconfigurations and outdated Jenkins installations are at risk of such exploitation.
 
-This tool scans for improperly secured Jenkins instances with open access to the Script Console, a feature that enables Groovy-based remote code execution (RCE). Misconfigured or insufficiently secured Script Consoles pose a critical security risk, allowing attackers to execute arbitrary commands on the system.
+### CVE Reference
 
-## Features
+- **CVE**: MULTI (multiple vulnerabilities and misconfigurations)
+- **Severity**: CRITICAL
+- **Vulnerability Class**: Remote Code Execution (RCE)
 
-- Detects Jenkins instances via `X-Jenkins` headers or content markers.
-- Probes for open access to the Script Console endpoints (`/script`, `/scriptText`).
-- Active RCE probes using Groovy scripts (optional, default: enabled).
-- Supports bulk scanning with configurable concurrency.
-- Outputs results to JSON for further analysis.
+### Features
 
-## Usage
+- Detects Jenkins instances via known fingerprints.
+- Extracts and verifies Jenkins version against a list of known issues.
+- Actively probes endpoints to validate exploitability (feature can be disabled with `--safe`).
+- Saves findings in JSON format for reporting or integration purposes.
+- Supports concurrency for fast, scalable scanning of multiple targets.
+- Option to disable SSL/TLS verification for scanning over HTTPS with self-signed certificates.
 
-### Basic Detection
-Scan a single target for Script Console exposure:
+### Installation
+
+1. Clone this repository:  
+   
