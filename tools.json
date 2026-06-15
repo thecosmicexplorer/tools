@@ -1,5 +1,16 @@
 [
   {
+    "name": "jira_user_enum_scanner",
+    "filename": "jira_user_enum_scanner.py",
+    "category": "misc",
+    "path": "misc/jira_user_enum_scanner.py",
+    "date": "2026-06-15",
+    "cve": null,
+    "cvss": null,
+    "description": "Enumerates Jira users via insecure API endpoints exposed on Jira platforms.",
+    "targets": []
+  },
+  {
     "name": "jenkins_script_console_rce_scanner",
     "filename": "jenkins_script_console_rce_scanner.py",
     "category": "rce",
