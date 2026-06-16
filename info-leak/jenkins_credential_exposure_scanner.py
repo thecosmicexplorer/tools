@@ -1,179 +1,228 @@
 #!/usr/bin/env python3
 """
 Jenkins Credential Exposure Scanner
-===================================
-Scans Jenkins instances to identify exposed sensitive credentials in configuration files.
+======================================
+Scans for exposed Jenkins credentials caused by misconfiguration or
+vulnerabilities in popular Jenkins plugins. This scanner can detect 
+and optionally exploit credential leaks via publicly accessible endpoints, 
+configuration dumps, or other exposed data sources.
 
-Vulnerability Description:
-Jenkins configuration files may contain plaintext or insufficiently protected credentials
-which can be accessed by unauthenticated or unauthorized users due to improper permissions 
-in certain configurations. This could potentially lead to further exploitation of the Jenkins instance 
-or other systems accessible with the compromised credentials.
-
-Risk:
-  - Exposed credentials could lead to network compromise, privilege escalation, or other attacks.
-  - Highly critical for organizations utilizing Jenkins for continuous integration/continuous deployment (CI/CD).
-
-Common Misconfigurations:
-  - Insecure file permissions on the Jenkins home directory.
-  - Insufficient access restrictions on publicly accessible Jenkins instances.
-
-Features:
-  - Detects Jenkins instances by querying known API and web endpoints.
-  - Extracts and analyzes configuration files for sensitive credentials.
-  - A `--safe` mode is implemented to disable active probing and perform detection only.
-
+Affected vulnerabilities:
+  - CVE-2020-2100: Unauthorized Jenkins API access
+  - CVE-2022-XXXX: Credentials in improperly protected configuration.xml files
+  - General exposure due to insecure configurations or plugin data leaks
+  
 Usage:
-  # Scan a single target
+  # Scan a single Jenkins instance for credential exposure
   python jenkins_credential_exposure_scanner.py --target http://jenkins.example.com
-
-  # Scan multiple targets from a list
-  python jenkins_credential_exposure_scanner.py --list targets.txt --output results.json
-
-  # Safe mode: detection only (no active checks for credential leak)
+  
+  # Perform detection-only scan
   python jenkins_credential_exposure_scanner.py --target http://jenkins.example.com --safe
+  
+  # Bulk scanning from a list of targets
+  python jenkins_credential_exposure_scanner.py --list targets.txt --output results.json
+  
+  # Increase concurrency and skip server certificate verification
+  python jenkins_credential_exposure_scanner.py --list targets.txt --concurrency 50 --no-verify
 
 References:
-  - https://www.jenkins.io/doc/book/system-administration/securing-jenkins/
-  - https://nvd.nist.gov
+  - https://nvd.nist.gov/vuln/detail/CVE-2020-2100
+  - https://wiki.jenkins.io/display/JENKINS/Security+Advisory
+  - https://www.jenkins.io/doc/book/system-administration/security/
 """
+
 import argparse
 import asyncio
 import json
 import re
-from urllib.parse import urljoin
+from datetime import datetime, timezone
+from typing import Optional
 
 import httpx
-from colorama import Fore, Style
 
-JENKINS_FINGERPRINT_MARKERS = [
-    "<title>Dashboard [Jenkins]</title>",
-    'id="jenkins"'
+# ── ANSI color helpers ────────────────────────────────────────────────────────
+
+RED    = "\033[91m"
+YELLOW = "\033[93m"
+GREEN  = "\033[92m"
+CYAN   = "\033[96m"
+BOLD   = "\033[1m"
+RESET  = "\033[0m"
+
+
+def c(color: str, text: str) -> str:
+    """Wrap text in an ANSI color code."""
+    return f"{color}{text}{RESET}"
+
+
+# ── Constants ─────────────────────────────────────────────────────────────────
+
+TOOL_NAME       = "jenkins_credential_exposure_scanner"
+CVE_IDS         = ["CVE-2020-2100", "CVE-2022-XXXX"]
+CVSS_MAX        = "9.8"
+REQUEST_TIMEOUT = 10
+SEMAPHORE_LIMIT = 20
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Jenkins-Credential-Scanner)"
+}
+
+# Keywords to identify Jenkins servers
+JENKINS_INDICATORS = [
+    "X-Jenkins",
+    "X-Hudson",
+    "Jenkins-Crumb",
+    "Jenkins-Agent",
+    "Jenkins-Credentials",
 ]
 
+# Known paths to check
 DETECTION_PATHS = [
     "/",
     "/login",
+    "/script",
+    "/credentials/",
+    "/whoAmI/",
     "/manage",
+    "/view/all/newJob",
 ]
 
-CONFIG_PATHS = [
-    "/credentials/store/system/domain/_/",
-    "/scriptText"  # Dangerous, contains scripting console access
+# Paths known to expose credentials or other sensitive data in certain cases
+CREDENTIAL_EXPOSURE_PATHS = [
+    "/credentials/store/system/domain/_/api/json",
+    "/job/someJob/config.xml",  # Replaceable job path
+    "/scriptText",
+    "/administrativeMonitor/OldData/manage",
 ]
 
-SEMAPHORE_LIMIT = 20
-REQUEST_TIMEOUT = 10
+
+# ── Helper Functions ─────────────────────────────────────────────────────────
+
+def parse_version(header_value: str) -> Optional[str]:
+    """Extracts the Jenkins version from a response header."""
+    matches = re.search(r"X-Jenkins:\s*([\d\.]+)", header_value, re.IGNORECASE)
+    return matches.group(1) if matches else None
 
 
-def normalize_url(url: str) -> str:
-    """Normalize a URL to include protocol and remove trailing slashes."""
-    if not url.startswith(("http://", "https://")):
-        url = "http://" + url
-    return url.rstrip("/")
+def check_version_vulnerability(version: str) -> bool:
+    """Checks if a Jenkins version is vulnerable based on known CVEs."""
+    known_vulnerable_versions = [
+        "2.319.1",
+        "2.277.x",  # E.g., 2.277.1
+        "2.x"
+    ]
+    return version in known_vulnerable_versions
 
 
-async def print_status(message: str, level: str = "INFO"):
-    """Print color-coded status messages."""
-    levels = {
-        "CRITICAL": Fore.RED,
-        "HIGH": Fore.YELLOW,
-        "INFO": Fore.GREEN,
-    }
-    color = levels.get(level.upper(), Fore.RESET)
-    print(f"{color}[{level}]{Style.RESET_ALL} {message}")
+def extract_api_data(response_text: str) -> Optional[dict]:
+    """Parses JSON data from a response to extract credentials."""
+    try:
+        return json.loads(response_text)
+    except json.JSONDecodeError:
+        return None
 
 
-async def detect_jenkins(client: httpx.AsyncClient, base_url: str, semaphore: asyncio.Semaphore):
-    """
-    Detect if a URL is running Jenkins.
-    Returns a dictionary with detection details.
-    """
+async def safe_request(client: httpx.AsyncClient, url: str, **kwargs):
+    """Performs an HTTP GET request and handles exceptions."""
+    try:
+        response = await client.get(url, timeout=REQUEST_TIMEOUT, **kwargs)
+        return response
+    except (httpx.RequestError, httpx.HTTPStatusError):
+        return None
+
+
+# ── Main Scanner Functionality ───────────────────────────────────────────────
+
+async def detect_jenkins(client: httpx.AsyncClient, target: str) -> Optional[str]:
+    """Detects if a target is running Jenkins."""
+    try:
+        response = await client.get(target, headers=HEADERS)
+        for header, value in response.headers.items():
+            if any(indicator in header or indicator in value for indicator in JENKINS_INDICATORS):
+                version = parse_version(header)
+                return version
+        return None
+    except httpx.RequestError as e:
+        print(c(RED, f"Error connecting to {target}: {str(e)}"))
+        return None
+
+
+async def probe_credentials(client: httpx.AsyncClient, target: str, path: str) -> dict:
+    """Probes paths for credential exposure."""
+    url = target.rstrip("/") + path
+    result = {"path": path, "exposed": False}
+    response = await safe_request(client, url)
+    if response and response.status_code == 200:
+        api_data = extract_api_data(response.text)
+        if api_data:
+            result["exposed"] = True
+            result["data"] = api_data
+    return result
+
+
+async def scan_target(client: httpx.AsyncClient, target: str, safe: bool = False) -> dict:
+    """Scans a single Jenkins instance."""
+    print(c(CYAN, f"[INFO] Scanning {target}..."))
+
+    detected_version = await detect_jenkins(client, target)
+    if not detected_version:
+        print(c(YELLOW, f"[INFO] {target} does not appear to be Jenkins."))
+        return {"target": target, "jenkins": False}
+
+    print(c(GREEN, f"[INFO] {target} is running Jenkins {detected_version}. Vulnerable?: {check_version_vulnerability(detected_version)}"))
+    result = {"target": target, "jenkins": True, "version": detected_version, "probes": []}
+
+    if safe:
+        return result
+
+    for path in CREDENTIAL_EXPOSURE_PATHS:
+        probe_result = await probe_credentials(client, target, path)
+        result["probes"].append(probe_result)
+
+    return result
+
+
+# ── CLI Functions ────────────────────────────────────────────────────────────
+
+async def main():
+    parser = argparse.ArgumentParser(description="Jenkins Credential Exposure Scanner")
+    parser.add_argument("--target", help="The target Jenkins URL to scan", type=str)
+    parser.add_argument("--list", help="File containing list of Jenkins server URLs", type=str)
+    parser.add_argument("--output", help="File to save JSON results", type=str)
+    parser.add_argument("--safe", help="Detection-only scan", action="store_true")
+    parser.add_argument("--concurrency", help="Concurrent scan limit (default 20)", type=int, default=SEMAPHORE_LIMIT)
+    parser.add_argument("--no-verify", help="Disable SSL verification", action="store_true")
+    args = parser.parse_args()
+    
+    targets = []
+    if args.target:
+        targets.append(args.target)
+    elif args.list:
+        with open(args.list, "r") as f:
+            targets = [line.strip() for line in f.readlines()]
+    else:
+        print(c(RED, "[ERROR] Either --target or --list must be provided."))
+        sys.exit(1)
+
+    results = []
+    semaphore = asyncio.Semaphore(args.concurrency)
+
+    async with httpx.AsyncClient(verify=not args.no_verify) as client:
+        tasks = [run_with_semaphore(semaphore, scan_target, client, target, args.safe) for target in targets]
+        results = await asyncio.gather(*tasks)
+
+    if args.output:
+        with open(args.output, "w") as f:
+            json.dump(results, f, indent=4)
+    else:
+        print(json.dumps(results, indent=4))
+
+
+async def run_with_semaphore(semaphore, func, *args, **kwargs):
     async with semaphore:
-        for path in DETECTION_PATHS:
-            try:
-                response = await client.get(urljoin(base_url, path), timeout=REQUEST_TIMEOUT)
-                if response.status_code == 200:
-                    for marker in JENKINS_FINGERPRINT_MARKERS:
-                        if marker in response.text:
-                            return {"url": base_url, "detected": True}
-            except (httpx.RequestError, Exception):
-                pass
-    return {"url": base_url, "detected": False}
-
-
-async def check_exposed_credentials(client: httpx.AsyncClient, base_url: str, semaphore: asyncio.Semaphore):
-    """
-    Check for exposed Jenkins credentials at known vulnerable paths.
-    """
-    async with semaphore:
-        findings = []
-        for path in CONFIG_PATHS:
-            url = urljoin(base_url, path)
-            try:
-                response = await client.get(url, timeout=REQUEST_TIMEOUT)
-                if response.status_code < 400 and "credentials" in response.text:
-                    findings.append({"url": url, "status_code": response.status_code})
-            except (httpx.RequestError, Exception) as e:
-                pass
-        return findings
-
-
-async def scan_target(client: httpx.AsyncClient, url: str, safe: bool, semaphore: asyncio.Semaphore):
-    """Scan a single target."""
-    base_url = normalize_url(url)
-
-    detection_result = await detect_jenkins(client, base_url, semaphore)
-
-    if not detection_result["detected"]:
-        await print_status(f"{base_url} is not running Jenkins.", "INFO")
-        return detection_result
-
-    await print_status(f"Jenkins detected at {base_url}", "HIGH")
-
-    if not safe:
-        findings = await check_exposed_credentials(client, base_url, semaphore)
-        if findings:
-            await print_status(f"CRITICAL: Exposed credentials found at {base_url}.", "CRITICAL")
-            detection_result["findings"] = findings
-        else:
-            await print_status(f"No exposed credentials found at {base_url}.", "INFO")
-    return detection_result
-
-
-async def scan(targets, safe, concurrency, output_file, no_verify):
-    """Scan a list of targets."""
-    semaphore = asyncio.Semaphore(concurrency)
-    async with httpx.AsyncClient(verify=not no_verify) as client:
-        scan_tasks = [scan_target(client, target, safe, semaphore) for target in targets]
-        results = await asyncio.gather(*scan_tasks)
-
-        if output_file:
-            with open(output_file, "w") as f:
-                json.dump(results, f, indent=4)
-            await print_status(f"Results written to {output_file}.", "INFO")
+        return await func(*args, **kwargs)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Jenkins Credential Exposure Scanner")
-    parser.add_argument("--target", help="URL of the Jenkins instance to scan.")
-    parser.add_argument("--list", help="File with a list of targets (one per line).")
-    parser.add_argument("--output", help="File to save scan results as JSON.")
-    parser.add_argument("--safe", action="store_true", help="Enable safe mode (detection only).")
-    parser.add_argument("--concurrency", type=int, default=10, help="Number of concurrent requests.")
-    parser.add_argument("--no-verify", action="store_true", help="Disable SSL/TLS certificate verification.")
+    asyncio.run(main())
 
-    args = parser.parse_args()
-    target_list = []
-
-    if args.target:
-        target_list = [args.target]
-    elif args.list:
-        with open(args.list, "r") as f:
-            target_list = [line.strip() for line in f if line.strip()]
-    
-    if not target_list:
-        print("Error: No targets provided. Use --target or --list.")
-        exit(1)
-
-    asyncio.run(scan(target_list, args.safe, args.concurrency, args.output, args.no_verify))

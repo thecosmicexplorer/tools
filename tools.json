@@ -1,5 +1,18 @@
 [
   {
+    "name": "jenkins_credential_exposure_scanner",
+    "filename": "jenkins_credential_exposure_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/jenkins_credential_exposure_scanner.py",
+    "date": "2026-06-16",
+    "cve": "CVE-2020-2100",
+    "cvss": null,
+    "description": "Detects and probes for credential exposure vulnerabilities in Jenkins",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
     "name": "jira_user_enum_scanner",
     "filename": "jira_user_enum_scanner.py",
     "category": "misc",
