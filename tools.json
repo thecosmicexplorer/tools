@@ -1,5 +1,16 @@
 [
   {
+    "name": "apache_druid_ssrf_scanner",
+    "filename": "apache_druid_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/apache_druid_ssrf_scanner.py",
+    "date": "2026-06-17",
+    "cve": "CVE-2026-45123",
+    "cvss": 9.8,
+    "description": "Apache Druid (CVE-2026-45123) \u2014 SSRF via Redirected HTTP Requests",
+    "targets": []
+  },
+  {
     "name": "jenkins_credential_exposure_scanner",
     "filename": "jenkins_credential_exposure_scanner.py",
     "category": "info-leak",

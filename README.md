@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-17 | [apache_druid_ssrf_scanner.py](ssrf/apache_druid_ssrf_scanner.py) | CVE-2026-45123 (CVSS 9.8) | ssrf | Apache Druid (CVE-2026-45123) — SSRF via Redirected HTTP Requests |
 | 2026-06-15 | [jira_user_enum_scanner.py](misc/jira_user_enum_scanner.py) | — | misc | Enumerates Jira users via insecure API endpoints exposed on Jira platforms. |
 | 2026-06-12 | [gitea_rce_cve_2026_56789_scanner.py](rce/gitea_rce_cve_2026_56789_scanner.py) | CVE-2026-56789 (CVSS 9.8) | rce | Remote Code Execution (RCE) scanner for Gitea instances vulnerable to CVE-2026-56789. |
 | 2026-06-11 | [azure_devops_ssrf_scanner.py](ssrf/azure_devops_ssrf_scanner.py) | — | ssrf | Azure DevOps Server SSRF scanner for detecting outbound HTTP request vulnerabilities. |
