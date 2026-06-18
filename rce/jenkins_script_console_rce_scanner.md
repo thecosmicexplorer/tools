@@ -1,23 +1,27 @@
-# Jenkins Script Console Remote Code Execution Scanner
+# Jenkins Script Console Remote Code Execution (RCE) Scanner
 
-This tool scans for Jenkins servers with potential unauthorized access to the "Script Console" feature, a critical vulnerability that could allow remote code execution (RCE). Misconfigurations and outdated Jenkins installations are at risk of such exploitation.
+This tool scans for unauthenticated access to the Jenkins Script Console, which could lead
+to remote code execution (RCE) due to insecure administrative access to Jenkins instances.
+It identifies misconfigurations or exposures caused by lack of proper access controls.
 
-### CVE Reference
+## CVE Information
 
-- **CVE**: MULTI (multiple vulnerabilities and misconfigurations)
-- **Severity**: CRITICAL
-- **Vulnerability Class**: Remote Code Execution (RCE)
+- **CVE-ID**: Multiple (Jenkins Script Console Misconfiguration)
+- **CVSS 3.1 Base Score**: 9.8 (Critical)
 
-### Features
+### Vulnerability Details
 
-- Detects Jenkins instances via known fingerprints.
-- Extracts and verifies Jenkins version against a list of known issues.
-- Actively probes endpoints to validate exploitability (feature can be disabled with `--safe`).
-- Saves findings in JSON format for reporting or integration purposes.
-- Supports concurrency for fast, scalable scanning of multiple targets.
-- Option to disable SSL/TLS verification for scanning over HTTPS with self-signed certificates.
+The Jenkins Script Console is a powerful administrative tool in Jenkins that allows running arbitrary Groovy code on the server. When misconfigured, the Script Console may inadvertently become accessible without proper authentication. Attackers leveraging this misconfiguration can execute arbitrary operating system commands.
 
-### Installation
+## Features
 
-1. Clone this repository:  
-   
+- Detects Jenkins installations and probes for exposed Script Console access.
+- Extracts and identifies the Jenkins version.
+- Determines if the version is potentially vulnerable based on version thresholds.
+- Active probing feature to test RCE (disabled with `--safe` flag).
+- Async-enabled for high concurrency scanning.
+
+## Usage Examples
+
+### Scan a single target for vulnerability
+
