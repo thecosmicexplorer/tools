@@ -1,5 +1,16 @@
 [
   {
+    "name": "apache_openmeetings_rce_scanner",
+    "filename": "apache_openmeetings_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/apache_openmeetings_rce_scanner.py",
+    "date": "2026-06-19",
+    "cve": "CVE-2025-67890",
+    "cvss": null,
+    "description": "Remote code execution scanner for Apache OpenMeetings exploiting a vulnerable endpoint.",
+    "targets": []
+  },
+  {
     "name": "jenkins_script_console_rce_scanner",
     "filename": "jenkins_script_console_rce_scanner.py",
     "category": "rce",
