@@ -1,5 +1,18 @@
 [
   {
+    "name": "gitlab_user_enum_scanner",
+    "filename": "gitlab_user_enum_scanner.py",
+    "category": "misc",
+    "path": "misc/gitlab_user_enum_scanner.py",
+    "date": "2026-06-20",
+    "cve": null,
+    "cvss": null,
+    "description": "Detects and exploits GitLab user enumeration via GraphQL API.",
+    "targets": [
+      "gitlab"
+    ]
+  },
+  {
     "name": "apache_openmeetings_rce_scanner",
     "filename": "apache_openmeetings_rce_scanner.py",
     "category": "rce",
