@@ -1,5 +1,18 @@
 [
   {
+    "name": "gitlab_ci_schedule_rce_scanner",
+    "filename": "gitlab_ci_schedule_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/gitlab_ci_schedule_rce_scanner.py",
+    "date": "2026-06-21",
+    "cve": null,
+    "cvss": null,
+    "description": "Scans for remote code execution vulnerabilities via malicious GitLab CI job schedules.",
+    "targets": [
+      "gitlab"
+    ]
+  },
+  {
     "name": "gitlab_user_enum_scanner",
     "filename": "gitlab_user_enum_scanner.py",
     "category": "misc",

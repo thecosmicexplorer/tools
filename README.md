@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-21 | [gitlab_ci_schedule_rce_scanner.py](rce/gitlab_ci_schedule_rce_scanner.py) | — | rce | Scans for remote code execution vulnerabilities via malicious GitLab CI job schedules. |
 | 2026-06-20 | [gitlab_user_enum_scanner.py](misc/gitlab_user_enum_scanner.py) | — | misc | Detects and exploits GitLab user enumeration via GraphQL API. |
 | 2026-06-19 | [apache_openmeetings_rce_scanner.py](rce/apache_openmeetings_rce_scanner.py) | CVE-2025-67890 | rce | Remote code execution scanner for Apache OpenMeetings exploiting a vulnerable endpoint. |
 | 2026-06-17 | [apache_druid_ssrf_scanner.py](ssrf/apache_druid_ssrf_scanner.py) | CVE-2026-45123 (CVSS 9.8) | ssrf | Apache Druid (CVE-2026-45123) — SSRF via Redirected HTTP Requests |
