@@ -1,5 +1,16 @@
 [
   {
+    "name": "fastapi_ssrf_scanner",
+    "filename": "fastapi_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/fastapi_ssrf_scanner.py",
+    "date": "2026-06-22",
+    "cve": null,
+    "cvss": null,
+    "description": "FastAPI SSRF detection and exploitation scanner.",
+    "targets": []
+  },
+  {
     "name": "gitlab_ci_schedule_rce_scanner",
     "filename": "gitlab_ci_schedule_rce_scanner.py",
     "category": "rce",
