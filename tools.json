@@ -1,5 +1,18 @@
 [
   {
+    "name": "jupyter_notebook_token_leak_scanner",
+    "filename": "jupyter_notebook_token_leak_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/jupyter_notebook_token_leak_scanner.py",
+    "date": "2026-06-23",
+    "cve": "CVE-2020-26215",
+    "cvss": null,
+    "description": "Detects misconfigured Jupyter Notebook instances leaking authentication tokens.",
+    "targets": [
+      "jupyter"
+    ]
+  },
+  {
     "name": "fastapi_ssrf_scanner",
     "filename": "fastapi_ssrf_scanner.py",
     "category": "ssrf",

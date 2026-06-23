@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-23 | [jupyter_notebook_token_leak_scanner.py](info-leak/jupyter_notebook_token_leak_scanner.py) | CVE-2020-26215 | info-leak | Detects misconfigured Jupyter Notebook instances leaking authentication tokens. |
 | 2026-06-22 | [fastapi_ssrf_scanner.py](ssrf/fastapi_ssrf_scanner.py) | — | ssrf | FastAPI SSRF detection and exploitation scanner. |
 | 2026-06-21 | [gitlab_ci_schedule_rce_scanner.py](rce/gitlab_ci_schedule_rce_scanner.py) | — | rce | Scans for remote code execution vulnerabilities via malicious GitLab CI job schedules. |
 | 2026-06-20 | [gitlab_user_enum_scanner.py](misc/gitlab_user_enum_scanner.py) | — | misc | Detects and exploits GitLab user enumeration via GraphQL API. |
