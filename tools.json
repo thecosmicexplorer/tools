@@ -1,5 +1,18 @@
 [
   {
+    "name": "vault_kv_v2_path_traversal_scanner",
+    "filename": "vault_kv_v2_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/vault_kv_v2_path_traversal_scanner.py",
+    "date": "2026-06-24",
+    "cve": "CVE-2026-45678",
+    "cvss": 9.8,
+    "description": "Path Traversal in HashiCorp Vault KV v2 Secrets Engine",
+    "targets": [
+      "vault"
+    ]
+  },
+  {
     "name": "jupyter_notebook_token_leak_scanner",
     "filename": "jupyter_notebook_token_leak_scanner.py",
     "category": "info-leak",
