@@ -1,5 +1,18 @@
 [
   {
+    "name": "ansible_unauth_remote_rce_scanner",
+    "filename": "ansible_unauth_remote_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/ansible_unauth_remote_rce_scanner.py",
+    "date": "2026-06-25",
+    "cve": "CVE-2026-44578",
+    "cvss": 9.8,
+    "description": "Scans for unauthenticated remote code execution vulnerability in Ansible AWX.",
+    "targets": [
+      "ansible"
+    ]
+  },
+  {
     "name": "vault_kv_v2_path_traversal_scanner",
     "filename": "vault_kv_v2_path_traversal_scanner.py",
     "category": "path-traversal",
