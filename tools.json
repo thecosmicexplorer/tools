@@ -1,5 +1,16 @@
 [
   {
+    "name": "jira_path_traversal_scanner",
+    "filename": "jira_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/jira_path_traversal_scanner.py",
+    "date": "2026-06-26",
+    "cve": "CVE-2023-22501",
+    "cvss": 9.1,
+    "description": "Jira Path Traversal Vulnerability Scanner for CVE-2023-22501",
+    "targets": []
+  },
+  {
     "name": "ansible_unauth_remote_rce_scanner",
     "filename": "ansible_unauth_remote_rce_scanner.py",
     "category": "rce",
