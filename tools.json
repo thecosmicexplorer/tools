@@ -1,5 +1,19 @@
 [
   {
+    "name": "ansible_vault_password_leak_scanner",
+    "filename": "ansible_vault_password_leak_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/ansible_vault_password_leak_scanner.py",
+    "date": "2026-06-27",
+    "cve": null,
+    "cvss": null,
+    "description": "Ansible Vault Password Leak via common misconfigurations and patterns scanner.",
+    "targets": [
+      "vault",
+      "ansible"
+    ]
+  },
+  {
     "name": "jira_path_traversal_scanner",
     "filename": "jira_path_traversal_scanner.py",
     "category": "path-traversal",

@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-27 | [ansible_vault_password_leak_scanner.py](info-leak/ansible_vault_password_leak_scanner.py) | — | info-leak | Ansible Vault Password Leak via common misconfigurations and patterns scanner. |
 | 2026-06-26 | [jira_path_traversal_scanner.py](path-traversal/jira_path_traversal_scanner.py) | CVE-2023-22501 (CVSS 9.1) | path-traversal | Jira Path Traversal Vulnerability Scanner for CVE-2023-22501 |
 | 2026-06-25 | [ansible_unauth_remote_rce_scanner.py](rce/ansible_unauth_remote_rce_scanner.py) | CVE-2026-44578 (CVSS 9.8) | rce | Scans for unauthenticated remote code execution vulnerability in Ansible AWX. |
 | 2026-06-23 | [jupyter_notebook_token_leak_scanner.py](info-leak/jupyter_notebook_token_leak_scanner.py) | CVE-2020-26215 | info-leak | Detects misconfigured Jupyter Notebook instances leaking authentication tokens. |
