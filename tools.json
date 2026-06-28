@@ -1,5 +1,16 @@
 [
   {
+    "name": "npm_package_command_injection_scanner",
+    "filename": "npm_package_command_injection_scanner.py",
+    "category": "rce",
+    "path": "rce/npm_package_command_injection_scanner.py",
+    "date": "2026-06-28",
+    "cve": null,
+    "cvss": null,
+    "description": "Scanner for command injection vulnerabilities in npm package scripts via crafted parameters.",
+    "targets": []
+  },
+  {
     "name": "ansible_vault_password_leak_scanner",
     "filename": "ansible_vault_password_leak_scanner.py",
     "category": "info-leak",

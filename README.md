@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-28 | [npm_package_command_injection_scanner.py](rce/npm_package_command_injection_scanner.py) | — | rce | Scanner for command injection vulnerabilities in npm package scripts via crafted parameters. |
 | 2026-06-27 | [ansible_vault_password_leak_scanner.py](info-leak/ansible_vault_password_leak_scanner.py) | — | info-leak | Ansible Vault Password Leak via common misconfigurations and patterns scanner. |
 | 2026-06-26 | [jira_path_traversal_scanner.py](path-traversal/jira_path_traversal_scanner.py) | CVE-2023-22501 (CVSS 9.1) | path-traversal | Jira Path Traversal Vulnerability Scanner for CVE-2023-22501 |
 | 2026-06-25 | [ansible_unauth_remote_rce_scanner.py](rce/ansible_unauth_remote_rce_scanner.py) | CVE-2026-44578 (CVSS 9.8) | rce | Scans for unauthenticated remote code execution vulnerability in Ansible AWX. |
