@@ -1,5 +1,18 @@
 [
   {
+    "name": "jenkins_script_console_auth_bypass_scanner",
+    "filename": "jenkins_script_console_auth_bypass_scanner.py",
+    "category": "rce",
+    "path": "rce/jenkins_script_console_auth_bypass_scanner.py",
+    "date": "2026-06-29",
+    "cve": "CVE-2023-27898",
+    "cvss": null,
+    "description": "Scanner for Jenkins Script Console Authentication Bypass (CVE-2023-27898).",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
     "name": "npm_package_command_injection_scanner",
     "filename": "npm_package_command_injection_scanner.py",
     "category": "rce",
