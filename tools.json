@@ -1,5 +1,18 @@
 [
   {
+    "name": "argocd_repo_access_bypass_scanner",
+    "filename": "argocd_repo_access_bypass_scanner.py",
+    "category": "misc",
+    "path": "misc/argocd_repo_access_bypass_scanner.py",
+    "date": "2026-06-30",
+    "cve": "CVE-2025-41234",
+    "cvss": null,
+    "description": "ArgoCD Repository Access Bypass Vulnerability Scanner",
+    "targets": [
+      "argocd"
+    ]
+  },
+  {
     "name": "jenkins_script_console_auth_bypass_scanner",
     "filename": "jenkins_script_console_auth_bypass_scanner.py",
     "category": "rce",

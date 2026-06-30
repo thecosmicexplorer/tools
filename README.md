@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-06-30 | [argocd_repo_access_bypass_scanner.py](misc/argocd_repo_access_bypass_scanner.py) | CVE-2025-41234 | misc | ArgoCD Repository Access Bypass Vulnerability Scanner |
 | 2026-06-29 | [jenkins_script_console_auth_bypass_scanner.py](rce/jenkins_script_console_auth_bypass_scanner.py) | CVE-2023-27898 | rce | Scanner for Jenkins Script Console Authentication Bypass (CVE-2023-27898). |
 | 2026-06-28 | [npm_package_command_injection_scanner.py](rce/npm_package_command_injection_scanner.py) | — | rce | Scanner for command injection vulnerabilities in npm package scripts via crafted parameters. |
 | 2026-06-27 | [ansible_vault_password_leak_scanner.py](info-leak/ansible_vault_password_leak_scanner.py) | — | info-leak | Ansible Vault Password Leak via common misconfigurations and patterns scanner. |
