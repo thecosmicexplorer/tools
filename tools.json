@@ -1,5 +1,16 @@
 [
   {
+    "name": "azure_function_key_leak_scanner",
+    "filename": "azure_function_key_leak_scanner.py",
+    "category": "info-leak",
+    "path": "info-leak/azure_function_key_leak_scanner.py",
+    "date": "2026-07-01",
+    "cve": null,
+    "cvss": null,
+    "description": "Scanner for identifying and exploiting Azure Function key leaks via anonymous access.",
+    "targets": []
+  },
+  {
     "name": "argocd_repo_access_bypass_scanner",
     "filename": "argocd_repo_access_bypass_scanner.py",
     "category": "misc",
