@@ -1,16 +1,15 @@
 # Terraform Sensitive Variable Leak Scanner
 
-Terraform state files might inadvertently contain sensitive variables such as
-API keys, passwords, and tokens. If these files are exposed or improperly
-secured, they can lead to severe security breaches. This tool helps identify
-such exposed state files and scans them for sensitive variables.
+## Description
+`terraform_sensitive_variable_leak_scanner.py` is a Python-based security tool for scanning Terraform configuration files (`.tf` and `.tfvars`) to identify sensitive variables that may contain hardcoded secrets. This tool helps you identify potential data leaks in your Infrastructure-as-Code (IaC) templates before they are pushed to repositories or shared.
 
 ## Features
-- Detects exposure of Terraform state files hosted locally or remotely.
-- Scans for sensitive fields (e.g., API keys, secrets, tokens) within state files.
-- Can be used in **safe mode** to only detect exposed files without inspecting data.
-- Outputs results in JSON format for easier sharing and reporting.
+- Detects sensitive variable patterns such as passwords, API keys, secrets, and tokens within `.tf` and `.tfvars` files.
+- Scans individual Terraform files or entire directories recursively.
+- Outputs findings with details like file name, line number, matching string, and regex pattern used for detection.
+- Provides JSON output for easier integration with other tools.
+- ANSI color-coded terminal output for better readability.
 
-## Installation
-Requires Python 3.10+. Install dependencies:
+## Usage Examples
 
+#### Scan a single Terraform file

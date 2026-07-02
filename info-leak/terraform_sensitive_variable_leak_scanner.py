@@ -2,197 +2,164 @@
 """
 Terraform Sensitive Variable Leak Scanner
 =========================================
-This tool scans Terraform state files for sensitive variables that may have been
-inadvertently exposed in publicly accessible state files or during improper storage.
+Scans Terraform configuration files to detect hardcoded sensitive variables
+that might be exposed in source code repositories or public locations.
+This tool is designed to help prevent sensitive data leaks such as API keys,
+credentials, private tokens, or secrets.
 
-Vulnerability Description:
---------------------------
-Terraform state files can contain sensitive information, including access keys,
-tokens, and passwords, which may lead to security issues if exposed to unauthorized users.
-This tool identifies such sensitive information in Terraform state files by looking for 
-specific keywords and patterns.
+Security Context:
+- Hardcoding sensitive values in Terraform variables or directly in configuration files
+  can expose your secrets to unauthorized users if files are uploaded to public repositories
+  or stored in insecure locations.
+- Sensitive variables typically include patterns such as "password", "secret", "key",
+  "token", and similar identifiers.
 
-Key Features:
-  - Detects Terraform state file exposure by performing content fingerprint checks.
-  - Identifies sensitive fields in state files, such as access keys and secrets.
-  - Support for remote file scanning (HTTP(S) targets) as well as local file scanning.
-  - Detection-only mode with the `--safe` flag for risk-free assessment.
-  - Asynchronous implementation for scanning multiple URLs concurrently.
-  - JSON output support for automated reporting.
+Features:
+- Detects sensitive variable names in Terraform `.tf` and `.tfvars` files.
+- Supports scanning individual files or directories recursively.
+- Outputs findings in JSON format for further analysis.
 
-Dependencies:
-  - `httpx` (for asynchronous HTTP requests)
-  - Python 3.10+ required
+Usage:
+  # Scan a single Terraform file
+  python terraform_sensitive_variable_leak_scanner.py --file main.tf
 
-Usage Examples:
----------------
-# Scan a single remote Terraform state file
-python terraform_sensitive_variable_leak_scanner.py --target https://example.com/terraform.tfstate
+  # Scan an entire directory recursively
+  python terraform_sensitive_variable_leak_scanner.py --directory ./terraform_project
 
-# Scan multiple Terraform state file URLs from a file
-python terraform_sensitive_variable_leak_scanner.py --list targets.txt --output findings.json
-
-# Scan a local Terraform state file
-python terraform_sensitive_variable_leak_scanner.py --local /path/to/terraform.tfstate
-
-# Perform detection-only scanning without evaluating sensitive variable values
-python terraform_sensitive_variable_leak_scanner.py --list targets.txt --safe
+  # Output scan results to a JSON file
+  python terraform_sensitive_variable_leak_scanner.py --directory ./terraform_project --output findings.json
 
 References:
------------
-  - https://developer.hashicorp.com/terraform/language/state/sensitive-data
-  - https://www.terraform.io/docs/state/index.html
-  - https://blog.brunokrebs.com/access-sensitive-data-from-terraform-state
+  - https://www.terraform.io/docs/language/values/variables.html#declaring-an-input-variable
+  - https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
 """
 
-import argparse
-import asyncio
-import httpx
-import json
 import os
 import re
-from pathlib import Path
-from termcolor import colored
+import json
+import sys
+import argparse
+from datetime import datetime
+from typing import List, Optional, Dict, Any
 
-# Constants
-DEFAULT_CONCURRENCY = 10
-REQUEST_TIMEOUT = 10
-SEMAPHORE_LIMIT = 50
+# ── ANSI color helpers ────────────────────────────────────────────────────────
 
-# Sensitive keys to search for in state files
-SENSITIVE_KEYWORDS = [
-    "access_key",
-    "secret_key",
-    "private_key",
-    "client_secret",
-    "api_key",
-    "password",
-    "token",
-    "jwt",
+RED = "\033[91m"
+YELLOW = "\033[93m"
+GREEN = "\033[92m"
+CYAN = "\033[96m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
+
+
+def c(color: str, text: str) -> str:
+    """Wrap text in an ANSI color code."""
+    return f"{color}{text}{RESET}"
+
+
+# ── Scanner Configuration ────────────────────────────────────────────────────
+
+TOOL_NAME = "terraform_sensitive_variable_leak_scanner"
+VERSION = "1.0.0"
+
+# Common patterns for sensitive variables in Terraform configurations
+SENSITIVE_VARIABLE_PATTERNS = [
+    r'(?i)password\s*=\s*".*"', 
+    r'(?i)secret\s*=\s*".*"', 
+    r'(?i)key\s*=\s*".*"', 
+    r'(?i)token\s*=\s*".*"', 
+    r'(?i)aws_access_key_id\s*=\s*".*"', 
+    r'(?i)aws_secret_access_key\s*=\s*".*"',
 ]
 
-# Color codes for terminal output
-COLOR_CRITICAL = "red"
-COLOR_HIGH = "yellow"
-COLOR_INFO = "green"
-COLOR_RESET = "white"
+# ── Core Scanner Logic ────────────────────────────────────────────────────────
 
-# Helper Functions
-def normalize_url(url):
-    """Ensure the URL contains a scheme and no trailing slash."""
-    if not url.startswith(("http://", "https://")):
-        url = "http://" + url
-    return url.rstrip("/")
+def scan_file(filepath: str) -> List[Dict[str, Any]]:
+    """
+    Scan a single .tf or .tfvars file for sensitive variable patterns.
 
-async def fetch_file_content(client, target):
-    """Fetch the contents of a local file or HTTP(S) resource."""
-    if target.startswith(("http://", "https://")):
-        try:
-            response = await client.get(target, timeout=REQUEST_TIMEOUT)
-            if response.status_code == 200:
-                return response.text
-            return None
-        except Exception as e:
-            print(colored(f"Error fetching remote file: {target}\n{e}", COLOR_HIGH))
-            return None
-    else:
-        try:
-            with open(target, "r", encoding="utf-8") as f:
-                return f.read()
-        except Exception as e:
-            print(colored(f"Error reading local file: {target}\n{e}", COLOR_HIGH))
-            return None
-
-def analyze_state_file(content):
-    """Analyze the content of a Terraform state file for sensitive variables."""
+    :param filepath: The path of the file to scan.
+    :return: A list of findings with sensitive variable details.
+    """
     findings = []
-    for key in SENSITIVE_KEYWORDS:
-        matches = re.findall(rf'"{key}":\s*"([^"]+)"', content)
-        for value in matches:
-            findings.append({"keyword": key, "value_snippet": value[:5] + "..."})
+
+    try:
+        with open(filepath, "r", encoding="utf-8") as file:
+            lines = file.readlines()
+          
+        for line_num, line in enumerate(lines, start=1):
+            for pattern in SENSITIVE_VARIABLE_PATTERNS:
+                if re.search(pattern, line):
+                    findings.append({
+                        "file": filepath,
+                        "line": line_num,
+                        "match": line.strip(),
+                        "pattern": pattern.strip(),
+                        "severity": "CRITICAL"
+                    })
+
+    except (IOError, UnicodeDecodeError) as e:
+        print(c(RED, f"[ERROR] Could not read file {filepath}: {e}"))
+
     return findings
 
-def print_findings(target, findings):
-    """Print detected findings to the terminal."""
-    for finding in findings:
-        print(
-            colored(f"[CRITICAL] {target}: Detected sensitive key '{finding['keyword']}' with value '{finding['value_snippet']}'", COLOR_CRITICAL)
-        )
 
-async def scan_target(client, target, semaphore, safe_mode):
-    """Scan a single target either local or remote."""
-    async with semaphore:
-        normalized_target = normalize_url(target) if target.startswith(("http://", "https://")) else target
-        content = await fetch_file_content(client, normalized_target)
-        if not content:
-            print(colored(f"[INFO] {normalized_target} could not be accessed or is empty.", COLOR_INFO))
-            return {"target": normalized_target, "status": "error", "findings": None}
+async def scan_directory(directory: str) -> List[Dict[str, Any]]:
+    """
+    Recursively scan a directory for .tf and .tfvars files containing sensitive variables.
 
-        findings = []
-        if not safe_mode:
-            findings = analyze_state_file(content)
-            if findings:
-                print_findings(normalized_target, findings)
-        
-        status = "vulnerable" if findings else "safe"
-        return {"target": normalized_target, "status": status, "findings": findings}
+    :param directory: Path to the directory to scan.
+    :return: List of findings across all scanned files.
+    """
+    findings = []
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith((".tf", ".tfvars")):
+                filepath = os.path.join(root, file)
+                findings.extend(scan_file(filepath))
+    return findings
 
-async def scan_targets(targets, concurrency, safe_mode):
-    """Scan multiple targets concurrently."""
-    semaphore = asyncio.Semaphore(concurrency)
-    async with httpx.AsyncClient() as client:
-        tasks = [scan_target(client, target, semaphore, safe_mode) for target in targets]
-        results = await asyncio.gather(*tasks)
-    return results
 
-def load_targets_from_file(file_path):
-    """Load targets from a text file."""
-    try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            return [line.strip() for line in f if line.strip()]
-    except Exception as e:
-        print(colored(f"Error reading targets file: {file_path}\n{e}", COLOR_HIGH))
-        return []
-
-def write_results_to_file(results, output_file):
-    """Write scan results to a JSON file."""
-    try:
-        with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(results, f, indent=4)
-        print(colored(f"Results saved to {output_file}", COLOR_INFO))
-    except Exception as e:
-        print(colored(f"Error writing output file: {output_file}\n{e}", COLOR_HIGH))
-
-# Main Function
-def main():
-    parser = argparse.ArgumentParser(description="Terraform Sensitive Variable Leak Scanner")
-    parser.add_argument("--target", help="Single target URL or file path to scan.")
-    parser.add_argument("--list", help="File containing a list of targets to scan.")
-    parser.add_argument("--local", help="Path to a local Terraform state file for scanning.")
-    parser.add_argument("--output", help="File path to save scan results in JSON format.")
-    parser.add_argument("--safe", action="store_true", help="Detection-only mode (no sensitive data inspection).")
-    parser.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY, help="Max concurrent requests (default: 10).")
-    parser.add_argument("--no-verify", action="store_true", help="Disable SSL verification for remote scans.")
-
+async def main():
+    parser = argparse.ArgumentParser(description="Scan Terraform files for sensitive variables.")
+    parser.add_argument("--file", type=str, help="Path to a Terraform `.tf` or `.tfvars` file.")
+    parser.add_argument("--directory", type=str, help="Path to a directory containing Terraform files.")
+    parser.add_argument("--output", type=str, help="Path to save scan results in JSON format.")
     args = parser.parse_args()
-    targets = []
 
-    if args.target:
-        targets.append(args.target)
-    if args.list:
-        targets.extend(load_targets_from_file(args.list))
-    if args.local:
-        targets.append(args.local)
+    if not args.file and not args.directory:
+        print(c(RED, "[ERROR] Either --file or --directory must be specified."))
+        parser.print_help()
+        sys.exit(1)
 
-    if not targets:
-        parser.error("No targets specified. Use --target, --list, or --local.")
+    findings = []
+    if args.file:
+        findings.extend(scan_file(args.file))
 
-    asyncio.run(scan(targets, args.concurrency, args.output, args.safe, args.no_verify))
+    if args.directory:
+        findings.extend(await scan_directory(args.directory))
 
-async def scan(targets, concurrency, output_file, safe_mode, no_verify):
-    results = await scan_targets(targets, concurrency, safe_mode)
-    if output_file:
-        write_results_to_file(results, output_file)
+    if findings:
+        print(c(YELLOW, f"[HIGH] Found {len(findings)} sensitive variables!"))
+        for finding in findings:
+            print(c(RED, f"File: {finding['file']}, Line: {finding['line']}"))
+            print(c(CYAN, f"  Match: {finding['match']}"))
+            print(c(YELLOW, f"  Reason: Detected pattern `{finding['pattern']}`"))
+    else:
+        print(c(GREEN, "[INFO] No sensitive variables found."))
+
+    if args.output:
+        try:
+            with open(args.output, "w", encoding="utf-8") as outfile:
+                json.dump(findings, outfile, indent=4)
+            print(c(GREEN, f"[INFO] Results saved to {args.output}"))
+        except IOError as e:
+            print(c(RED, f"[ERROR] Failed to save results: {e}"))
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print(c(RED, "\n[ERROR] Scan interrupted by user."))
+        sys.exit(1)
