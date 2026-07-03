@@ -1,5 +1,16 @@
 [
   {
+    "name": "hasura_graphql_injection_scanner",
+    "filename": "hasura_graphql_injection_scanner.py",
+    "category": "rce",
+    "path": "rce/hasura_graphql_injection_scanner.py",
+    "date": "2026-07-03",
+    "cve": null,
+    "cvss": null,
+    "description": "Detects and exploits GraphQL Injection vulnerabilities in Hasura GraphQL APIs.",
+    "targets": []
+  },
+  {
     "name": "terraform_sensitive_variable_leak_scanner",
     "filename": "terraform_sensitive_variable_leak_scanner.py",
     "category": "info-leak",
