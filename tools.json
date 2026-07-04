@@ -1,5 +1,18 @@
 [
   {
+    "name": "gitlab_ci_runner_rce_scanner",
+    "filename": "gitlab_ci_runner_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/gitlab_ci_runner_rce_scanner.py",
+    "date": "2026-07-04",
+    "cve": "CVE-2021-22205",
+    "cvss": null,
+    "description": "Detects GitLab CI/CD runner configurations vulnerable to remote code execution (RCE).",
+    "targets": [
+      "gitlab"
+    ]
+  },
+  {
     "name": "hasura_graphql_injection_scanner",
     "filename": "hasura_graphql_injection_scanner.py",
     "category": "rce",
