@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-07-05 | [gitlab_ci_yaml_secret_exposure_scanner.py](info-leak/gitlab_ci_yaml_secret_exposure_scanner.py) | — | info-leak | Detects secrets exposure via GitLab CI/CD YAML configuration. |
 | 2026-07-04 | [gitlab_ci_runner_rce_scanner.py](rce/gitlab_ci_runner_rce_scanner.py) | CVE-2021-22205 | rce | Detects GitLab CI/CD runner configurations vulnerable to remote code execution (RCE). |
 | 2026-07-03 | [hasura_graphql_injection_scanner.py](rce/hasura_graphql_injection_scanner.py) | — | rce | Detects and exploits GraphQL Injection vulnerabilities in Hasura GraphQL APIs. |
 | 2026-07-01 | [azure_function_key_leak_scanner.py](info-leak/azure_function_key_leak_scanner.py) | — | info-leak | Scanner for identifying and exploiting Azure Function key leaks via anonymous access. |
