@@ -1,5 +1,16 @@
 [
   {
+    "name": "azure_api_management_ssrf_scanner",
+    "filename": "azure_api_management_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/azure_api_management_ssrf_scanner.py",
+    "date": "2026-07-07",
+    "cve": null,
+    "cvss": null,
+    "description": "Detects and probes Server-Side Request Forgery vulnerabilities in the Azure API Management platform.",
+    "targets": []
+  },
+  {
     "name": "jenkins_script_console_rce_scanner",
     "filename": "jenkins_script_console_rce_scanner.py",
     "category": "rce",
