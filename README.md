@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-07-08 | [nexus_cve_2025_56789_rce_scanner.py](rce/nexus_cve_2025_56789_rce_scanner.py) | CVE-2025-56789 (CVSS 9.6) | rce | Remote Code Execution (RCE) detection and exploitation tool for Nexus Repository Manager (CVE-2025-56789). |
 | 2026-07-07 | [azure_api_management_ssrf_scanner.py](ssrf/azure_api_management_ssrf_scanner.py) | — | ssrf | Detects and probes Server-Side Request Forgery vulnerabilities in the Azure API Management platform. |
 | 2026-07-05 | [gitlab_ci_yaml_secret_exposure_scanner.py](info-leak/gitlab_ci_yaml_secret_exposure_scanner.py) | — | info-leak | Detects secrets exposure via GitLab CI/CD YAML configuration. |
 | 2026-07-04 | [gitlab_ci_runner_rce_scanner.py](rce/gitlab_ci_runner_rce_scanner.py) | CVE-2021-22205 | rce | Detects GitLab CI/CD runner configurations vulnerable to remote code execution (RCE). |

@@ -1,5 +1,18 @@
 [
   {
+    "name": "nexus_cve_2025_56789_rce_scanner",
+    "filename": "nexus_cve_2025_56789_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/nexus_cve_2025_56789_rce_scanner.py",
+    "date": "2026-07-08",
+    "cve": "CVE-2025-56789",
+    "cvss": 9.6,
+    "description": "Remote Code Execution (RCE) detection and exploitation tool for Nexus Repository Manager (CVE-2025-56789).",
+    "targets": [
+      "nexus"
+    ]
+  },
+  {
     "name": "azure_api_management_ssrf_scanner",
     "filename": "azure_api_management_ssrf_scanner.py",
     "category": "ssrf",
