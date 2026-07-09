@@ -1,5 +1,16 @@
 [
   {
+    "name": "apache_superset_auth_bypass_scanner",
+    "filename": "apache_superset_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/apache_superset_auth_bypass_scanner.py",
+    "date": "2026-07-09",
+    "cve": "CVE-2023-27524",
+    "cvss": null,
+    "description": "Apache Superset authentication bypass vulnerability scanner (CVE-2023-27524).",
+    "targets": []
+  },
+  {
     "name": "nexus_cve_2025_56789_rce_scanner",
     "filename": "nexus_cve_2025_56789_rce_scanner.py",
     "category": "rce",
