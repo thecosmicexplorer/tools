@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-07-10 | [docker_hub_registry_auth_bypass_scanner.py](auth-bypass/docker_hub_registry_auth_bypass_scanner.py) | — | auth-bypass | Detects and probes Docker Hub registries for authentication bypass vulnerabilities. |
 | 2026-07-09 | [apache_superset_auth_bypass_scanner.py](auth-bypass/apache_superset_auth_bypass_scanner.py) | CVE-2023-27524 | auth-bypass | Apache Superset authentication bypass vulnerability scanner (CVE-2023-27524). |
 | 2026-07-08 | [nexus_cve_2025_56789_rce_scanner.py](rce/nexus_cve_2025_56789_rce_scanner.py) | CVE-2025-56789 (CVSS 9.6) | rce | Remote Code Execution (RCE) detection and exploitation tool for Nexus Repository Manager (CVE-2025-56789). |
 | 2026-07-07 | [azure_api_management_ssrf_scanner.py](ssrf/azure_api_management_ssrf_scanner.py) | — | ssrf | Detects and probes Server-Side Request Forgery vulnerabilities in the Azure API Management platform. |
