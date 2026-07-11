@@ -1,5 +1,16 @@
 [
   {
+    "name": "apache_airflow_dag_rce_scanner",
+    "filename": "apache_airflow_dag_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/apache_airflow_dag_rce_scanner.py",
+    "date": "2026-07-11",
+    "cve": null,
+    "cvss": null,
+    "description": "Scanner for Apache Airflow DAG configuration remote code execution vulnerabilities.",
+    "targets": []
+  },
+  {
     "name": "docker_hub_registry_auth_bypass_scanner",
     "filename": "docker_hub_registry_auth_bypass_scanner.py",
     "category": "auth-bypass",
