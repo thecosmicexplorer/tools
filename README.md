@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-07-12 | [gitlab_graphql_rce_scanner.py](rce/gitlab_graphql_rce_scanner.py) | CVE-2025-76543 (CVSS 9.8) | rce | Remote Code Execution (RCE) via the GitLab GraphQL API |
 | 2026-07-11 | [apache_airflow_dag_rce_scanner.py](rce/apache_airflow_dag_rce_scanner.py) | — | rce | Scanner for Apache Airflow DAG configuration remote code execution vulnerabilities. |
 | 2026-07-10 | [docker_hub_registry_auth_bypass_scanner.py](auth-bypass/docker_hub_registry_auth_bypass_scanner.py) | — | auth-bypass | Detects and probes Docker Hub registries for authentication bypass vulnerabilities. |
 | 2026-07-09 | [apache_superset_auth_bypass_scanner.py](auth-bypass/apache_superset_auth_bypass_scanner.py) | CVE-2023-27524 | auth-bypass | Apache Superset authentication bypass vulnerability scanner (CVE-2023-27524). |
