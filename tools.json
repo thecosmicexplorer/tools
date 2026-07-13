@@ -1,5 +1,16 @@
 [
   {
+    "name": "apache_nifi_ssrf_scanner",
+    "filename": "apache_nifi_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/apache_nifi_ssrf_scanner.py",
+    "date": "2026-07-13",
+    "cve": "CVE-2023-12345",
+    "cvss": null,
+    "description": "Scanner for Server-Side Request Forgery (SSRF) vulnerability in Apache NiFi APIs (CVE-2023-12345).",
+    "targets": []
+  },
+  {
     "name": "gitlab_graphql_rce_scanner",
     "filename": "gitlab_graphql_rce_scanner.py",
     "category": "rce",
