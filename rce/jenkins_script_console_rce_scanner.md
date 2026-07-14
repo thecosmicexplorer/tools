@@ -1,19 +1,15 @@
-# Jenkins Script Console RCE Scanner (CVE-2026-12345)
+# Jenkins Script Console RCE Scanner
 
 ## Overview
 
-This tool detects and exploits a remote code execution (RCE) vulnerability in Jenkins' Script Console endpoint (CVE-2026-12345). The affected versions of Jenkins have an insecure configuration that allows unauthenticated access to the `/script` endpoint, enabling a remote attacker to execute arbitrary commands on the underlying server. The CVSS score for this vulnerability is 9.8 (Critical).
+This tool scans for Jenkins servers with an exposed Script Console endpoint. Such endpoints can allow unauthenticated or unauthorized users to execute arbitrary Groovy scripts, resulting in remote code execution (RCE). The scanner can perform detection-only scans or attempt controlled exploitation to verify RCE.
 
-## Features
+## CVE References
 
-- Detects Jenkins instances from predictable endpoints.
-- Extracts and validates Jenkins version information.
-- Checks if the detected Jenkins version is vulnerable.
-- Exploits the vulnerability to execute attacker-provided commands (optional).
-- Option to perform detection-only scans with the `--safe` flag.
-- Supports single-target and bulk-target scans.
-- Outputs results in colored terminal output and optional JSON format.
+This tool addresses common misconfigurations exposing Jenkins Script Console, such as:
+- [CVE-2018-1000861](https://nvd.nist.gov/vuln/detail/CVE-2018-1000861)
 
 ## Usage
 
-Scan a single target:
+### Basic Scan
+Detect a Script Console vulnerability on a single target:
