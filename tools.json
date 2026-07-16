@@ -1,5 +1,16 @@
 [
   {
+    "name": "httpd_log4j_rce_scanner",
+    "filename": "httpd_log4j_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/httpd_log4j_rce_scanner.py",
+    "date": "2026-07-16",
+    "cve": "CVE-2021-44228",
+    "cvss": null,
+    "description": "Detects and exploits the Log4Shell vulnerability (CVE-2021-44228) in Apache HTTP Servers.",
+    "targets": []
+  },
+  {
     "name": "gitlab_ci_pipeline_auth_bypass_scanner",
     "filename": "gitlab_ci_pipeline_auth_bypass_scanner.py",
     "category": "auth-bypass",

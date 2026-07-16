@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-07-16 | [httpd_log4j_rce_scanner.py](rce/httpd_log4j_rce_scanner.py) | CVE-2021-44228 | rce | Detects and exploits the Log4Shell vulnerability (CVE-2021-44228) in Apache HTTP Servers. |
 | 2026-07-15 | [gitlab_ci_pipeline_auth_bypass_scanner.py](auth-bypass/gitlab_ci_pipeline_auth_bypass_scanner.py) | CVE-2025-12345 | auth-bypass | Scanner for GitLab CI/CD pipeline authentication bypass vulnerability. |
 | 2026-07-13 | [apache_nifi_ssrf_scanner.py](ssrf/apache_nifi_ssrf_scanner.py) | CVE-2023-12345 | ssrf | Scanner for Server-Side Request Forgery (SSRF) vulnerability in Apache NiFi APIs (CVE-2023-12345). |
 | 2026-07-12 | [gitlab_graphql_rce_scanner.py](rce/gitlab_graphql_rce_scanner.py) | CVE-2025-76543 (CVSS 9.8) | rce | Remote Code Execution (RCE) via the GitLab GraphQL API |
