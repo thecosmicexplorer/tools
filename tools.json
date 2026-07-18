@@ -1,5 +1,18 @@
 [
   {
+    "name": "gitlab_discussions_ssrf_scanner",
+    "filename": "gitlab_discussions_ssrf_scanner.py",
+    "category": "ssrf",
+    "path": "ssrf/gitlab_discussions_ssrf_scanner.py",
+    "date": "2026-07-18",
+    "cve": "CVE-2026-78910",
+    "cvss": 9.4,
+    "description": "GitLab Discussions Server-Side Request Forgery (SSRF) Scanner.",
+    "targets": [
+      "gitlab"
+    ]
+  },
+  {
     "name": "gitlab_path_traversal_scanner",
     "filename": "gitlab_path_traversal_scanner.py",
     "category": "path-traversal",
