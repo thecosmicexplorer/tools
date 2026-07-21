@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-07-21 | [fastapi_auth_bypass_scanner.py](auth-bypass/fastapi_auth_bypass_scanner.py) | CVE-2026-12345 | auth-bypass | Scanner for authentication bypass vulnerability in FastAPI endpoints (CVE-2026-12345). |
 | 2026-07-20 | [gitlab_webhook_path_traversal_scanner.py](path-traversal/gitlab_webhook_path_traversal_scanner.py) | CVE-2026-98765 (CVSS 9.4) | path-traversal | Scanner for path traversal vulnerability in GitLab webhooks (CVE-2026-98765). |
 | 2026-07-18 | [gitlab_discussions_ssrf_scanner.py](ssrf/gitlab_discussions_ssrf_scanner.py) | CVE-2026-78910 (CVSS 9.4) | ssrf | GitLab Discussions Server-Side Request Forgery (SSRF) Scanner. |
 | 2026-07-16 | [httpd_log4j_rce_scanner.py](rce/httpd_log4j_rce_scanner.py) | CVE-2021-44228 | rce | Detects and exploits the Log4Shell vulnerability (CVE-2021-44228) in Apache HTTP Servers. |

@@ -1,5 +1,16 @@
 [
   {
+    "name": "fastapi_auth_bypass_scanner",
+    "filename": "fastapi_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/fastapi_auth_bypass_scanner.py",
+    "date": "2026-07-21",
+    "cve": "CVE-2026-12345",
+    "cvss": null,
+    "description": "Scanner for authentication bypass vulnerability in FastAPI endpoints (CVE-2026-12345).",
+    "targets": []
+  },
+  {
     "name": "gitlab_webhook_path_traversal_scanner",
     "filename": "gitlab_webhook_path_traversal_scanner.py",
     "category": "path-traversal",
