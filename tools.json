@@ -1,5 +1,18 @@
 [
   {
+    "name": "gitlab_runner_auth_bypass_scanner",
+    "filename": "gitlab_runner_auth_bypass_scanner.py",
+    "category": "auth-bypass",
+    "path": "auth-bypass/gitlab_runner_auth_bypass_scanner.py",
+    "date": "2026-07-22",
+    "cve": "CVE-2026-78901",
+    "cvss": 9.6,
+    "description": "Exploits an authentication bypass vulnerability in GitLab Runner API to gain unauthorized access.",
+    "targets": [
+      "gitlab"
+    ]
+  },
+  {
     "name": "fastapi_auth_bypass_scanner",
     "filename": "fastapi_auth_bypass_scanner.py",
     "category": "auth-bypass",
