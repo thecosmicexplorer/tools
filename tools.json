@@ -1,5 +1,18 @@
 [
   {
+    "name": "jenkins_script_console_rce_scanner",
+    "filename": "jenkins_script_console_rce_scanner.py",
+    "category": "rce",
+    "path": "rce/jenkins_script_console_rce_scanner.py",
+    "date": "2026-07-23",
+    "cve": "CVE-2017-1000353",
+    "cvss": null,
+    "description": "A scanner for detecting and exploiting remote code execution (RCE) vulnerabilities in Jenkins Script Console.",
+    "targets": [
+      "jenkins"
+    ]
+  },
+  {
     "name": "gitlab_runner_auth_bypass_scanner",
     "filename": "gitlab_runner_auth_bypass_scanner.py",
     "category": "auth-bypass",
