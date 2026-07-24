@@ -1,5 +1,16 @@
 [
   {
+    "name": "fastapi_path_traversal_scanner",
+    "filename": "fastapi_path_traversal_scanner.py",
+    "category": "path-traversal",
+    "path": "path-traversal/fastapi_path_traversal_scanner.py",
+    "date": "2026-07-24",
+    "cve": "CVE-2024-12345",
+    "cvss": 9.1,
+    "description": "FastAPI path traversal vulnerability scanner for identifying unsafe Uvicorn static file serving configurations.",
+    "targets": []
+  },
+  {
     "name": "jenkins_script_console_rce_scanner",
     "filename": "jenkins_script_console_rce_scanner.py",
     "category": "rce",

@@ -62,6 +62,7 @@ For a **searchable, filterable index** of all tools, visit the site:
 
 | Date | Tool | CVE | Category | Description |
 |------|------|-----|----------|-------------|
+| 2026-07-24 | [fastapi_path_traversal_scanner.py](path-traversal/fastapi_path_traversal_scanner.py) | CVE-2024-12345 (CVSS 9.1) | path-traversal | FastAPI path traversal vulnerability scanner for identifying unsafe Uvicorn static file serving configurations. |
 | 2026-07-22 | [gitlab_runner_auth_bypass_scanner.py](auth-bypass/gitlab_runner_auth_bypass_scanner.py) | CVE-2026-78901 (CVSS 9.6) | auth-bypass | Exploits an authentication bypass vulnerability in GitLab Runner API to gain unauthorized access. |
 | 2026-07-21 | [fastapi_auth_bypass_scanner.py](auth-bypass/fastapi_auth_bypass_scanner.py) | CVE-2026-12345 | auth-bypass | Scanner for authentication bypass vulnerability in FastAPI endpoints (CVE-2026-12345). |
 | 2026-07-20 | [gitlab_webhook_path_traversal_scanner.py](path-traversal/gitlab_webhook_path_traversal_scanner.py) | CVE-2026-98765 (CVSS 9.4) | path-traversal | Scanner for path traversal vulnerability in GitLab webhooks (CVE-2026-98765). |
